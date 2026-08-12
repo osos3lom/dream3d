@@ -1,0 +1,238 @@
+import type { Empire } from "@/types/empire";
+
+export const han: Empire = {
+  id: "han",
+  name: "Han China",
+  dwelling: "Siheyuan",
+  subtitle: "A courtyard house of harmony",
+  description:
+    "A Han dynasty courtyard residence, where grey-tiled roofs and timber halls face a central court, placing the family in careful order between screen wall, gatehouse and main hall.",
+  modelPath: "/models/han.glb",
+  tint: "#8a9a7b",
+  camera: { azimuth: -36, elevation: 34, dist: 1.0, targetY: 0.32 },
+  facts: [
+    { label: "Period", value: "c. 100 CE (Eastern Han)", icon: "period" },
+    { label: "Region", value: "North China Plain", icon: "region" },
+    { label: "Materials", value: "Timber, rammed earth, grey tile", icon: "materials" },
+    { label: "Distinctive feature", value: "Enclosed courtyard (siheyuan)", icon: "feature" },
+    { label: "Typical occupants", value: "Official or landowner family", icon: "occupants" },
+  ],
+  hotspots: [
+    {
+      id: "hipped-roof",
+      title: "Grey Tile Roofs",
+      short: "Curved eaves, ceramic tiles",
+      detail:
+        "Broad hipped roofs of grey ceramic tile with gently rising eaves shed the northern rains. Tomb models show even ridge ornaments and tile-end discs on Han houses.",
+      category: "roof",
+      anchor: [0.30, 0.99, 0.62],
+      snap: "roof",
+    },
+    {
+      id: "courtyard",
+      title: "Central Courtyard",
+      short: "The family's open sky",
+      detail:
+        "The walled court gathered light, air and the family itself — children playing, grain drying, ceremonies at the steps of the main hall. The house turns entirely toward it.",
+      category: "court",
+      anchor: [0.50, 0.16, 0.50],
+      snap: "court",
+    },
+    {
+      id: "gatehouse",
+      title: "Gatehouse & Screen",
+      short: "Southeast corner entrance",
+      detail:
+        "The gate sat at the southeast, per geomantic order, and a screen wall behind it blocked both evil spirits and prying eyes from the court within.",
+      category: "entrance",
+      anchor: [0.50, 0.24, 0.98],
+      snap: "wall",
+    },
+    {
+      id: "wing-rooms",
+      title: "Side Wing Rooms",
+      short: "Sons' and servants' quarters",
+      detail:
+        "East and west wings housed married sons by seniority, kitchens and storage — a built diagram of the family hierarchy Confucian ethics prescribed.",
+      category: "structure",
+      anchor: [0.02, 0.44, 0.45],
+      snap: "wall",
+    },
+  ],
+  interior: {
+    kicker: "Interior View",
+    title: "Main Hall Interior",
+    cta: "Explore Interior",
+    text: "Lacquered timber columns, woven rush mats, low tables and painted screens furnished the hall. An ancestral altar with tablets and incense anchored the north end, lit by paper-shaded lamps.",
+    image: "/img/han/interior.webp",
+  },
+  floorPlan: {
+    kicker: "Floor Plan",
+    title: "Siheyuan Layout",
+    cta: "View Floor Plan",
+    text: "Four buildings around a square court: main hall north, opposite hall south, wings east and west, and the gatehouse at the southeast corner behind its spirit screen.",
+    image: "/img/han/floor-plan.webp",
+    rooms: [
+      { name: "Main Hall 正房", note: "Elders & altar" },
+      { name: "Opposite Hall", note: "Guests & study" },
+      { name: "East Wing", note: "Eldest son" },
+      { name: "West Wing", note: "Younger sons" },
+      { name: "Gatehouse", note: "SE corner" },
+      { name: "Spirit Screen", note: "Behind the gate" },
+      { name: "Kitchen", note: "East side" },
+      { name: "Courtyard", note: "Center" },
+    ],
+  },
+  artifacts: {
+    kicker: "Household Objects",
+    title: "Artifacts of Daily Life",
+    cta: "Explore Artifacts",
+    text: "Lacquerware, glazed pottery and bronze — Han tombs preserve the full furnishing of a prosperous household, down to model farm animals.",
+    image: "/img/han/artifacts.webp",
+    items: [
+      { name: "Lacquer Cup", purpose: "Drinking wine at meals", material: "Lacquered wood", context: "Feather-light cups in red and black lacquer were the elegant ware of Han elites." },
+      { name: "Green-glazed Jar", purpose: "Storing grain and wine", material: "Lead-glazed pottery", context: "Han kilns perfected green lead glazes; jars filled every storeroom and tomb." },
+      { name: "Bronze Lamp", purpose: "Lighting evening halls", material: "Cast bronze", context: "Lamps shaped as kneeling servants or birds burned animal fat with a wick." },
+      { name: "Inkstone & Brush", purpose: "Writing on silk and bamboo slips", material: "Stone, bamboo, hair", context: "An official household ran on documents — brush, ink, and slips bound with cord." },
+      { name: "Pottery Well Model", purpose: "Tomb furnishing & symbol of the estate", material: "Glazed earthenware", context: "Miniature wells, stoves and pigsties in tombs mirror the working estate." },
+      { name: "Steamer (Zeng)", purpose: "Steaming millet and rice", material: "Bronze / pottery", context: "Stacked steamers sat over the stove; steamed grains were a northern staple." },
+    ],
+  },
+  dailyLife: {
+    kicker: "Daily Life",
+    title: "Life at Home",
+    cta: "Discover Daily Life",
+    text: "Days began with ancestral reverence and ended with family meals on mats around low tables. Sericulture, weaving and estate accounts occupied the household; children learned the Classics at the family school.",
+    image: "/img/han/daily-life.webp",
+  },
+  geography: {
+    kicker: "Where It Existed",
+    title: "Han China",
+    cta: "Explore Map",
+    text: "Courtyard houses filled the cities of the Yellow River plain — Chang'an, Luoyang and the commandery towns — their form fixed for two thousand years of Chinese domestic life.",
+    image: "/img/han/map.webp",
+    regionLabel: "Yellow River Plain, c. 100 CE",
+  },
+  lesson: {
+    title: "Inside the Han Siheyuan",
+    intro: "Confucian order written in timber and tile around a single open court.",
+    blocks: [
+      { heading: "Historical context", body: "The Han dynasty (206 BCE–220 CE) unified China and codified its architecture. Tomb pottery models — exact miniatures of estates — reveal the mature courtyard house." },
+      { heading: "Architectural layout", body: "A walled rectangle: main hall north, wings east and west, gatehouse southeast, screen wall behind the gate. Everything faces the court." },
+      { heading: "Key features", body: "Timber frame with dougong brackets, grey tile hipped roofs, rammed-earth walls, and a hierarchy of halls mapping the family itself." },
+      { heading: "Daily life", body: "Ancestor worship, sericulture, study of the Classics and estate management filled the day; the courtyard was its stage." },
+      { heading: "Materials & craft", body: "Cedar and pine frames, pounded earth, grey ceramic tile, lacquer, bronze and glazed pottery from imperial kilns." },
+      { heading: "Social context", body: "The siheyuan is Confucian ethics in plan: elders north, sons by rank in the wings, all within walls that define the family as a world." },
+    ],
+  },
+  quiz: [
+    {
+      q: "In a siheyuan, which building housed the family head and ancestral altar?",
+      choices: ["The gatehouse", "The north main hall", "The west wing", "The watchtower"],
+      answer: 1,
+      explanation: "The north hall (zhengfang), facing south, held the elders and the ancestral altar — the place of highest rank.",
+    },
+    {
+      q: "Why does the gate stand at the southeast corner?",
+      choices: ["Better sunlight", "Geomantic order and defense", "Closer to the well", "Tax regulation"],
+      answer: 1,
+      explanation: "Traditional geomancy placed the gate at the auspicious southeast; a screen wall behind it blocked spirits and sightlines.",
+    },
+    {
+      q: "Dougong brackets primarily…",
+      choices: ["Decorated the ridge", "Carried deep eaves on interlocking timber", "Locked the gate", "Held roof tiles"],
+      answer: 1,
+      explanation: "Layered wooden bracket sets transfer the weight of broad eaves to columns without nails.",
+    },
+    {
+      q: "Han green-glazed jars were mainly used to…",
+      choices: ["Store grain and wine", "Hold lamp oil only", "Fire the stove", "Float in rituals"],
+      answer: 0,
+      explanation: "Lead-glazed storage jars were the standard containers of Han households and tombs.",
+    },
+    {
+      q: "Our best visual evidence of Han houses comes from…",
+      choices: ["Surviving wooden halls", "Pottery tomb models", "Wall paintings only", "Travelers' sketches"],
+      answer: 1,
+      explanation: "Han tombs contain precise pottery miniatures of estates, towers and courtyards — a complete domestic archive.",
+    },
+  ],
+  timeline: [
+    { era: "Western Han", year: "c. 200 BCE", text: "Chang'an grows; courtyard plans standardize in the capital's wards." },
+    { era: "Wudi's reign", year: "c. 120 BCE", text: "Prosperous estates proliferate; tomb models begin recording house forms in detail." },
+    { era: "Xin interregnum", year: "9–23 CE", text: "Great families fortify estates with towers and walls amid unrest." },
+    { era: "Eastern Han", year: "c. 100 CE", text: "Luoyang flourishes; the classic siheyuan arrangement is fully formed." },
+    { era: "Han collapse", year: "220 CE", text: "Estate strongholds foreshadow the walled courtyard compounds of later dynasties." },
+  ],
+  keywords: ["china", "han", "siheyuan", "dougong", "courtyard", "tomb-model", "changan", "luoyang", "confucian"],
+  ar: {
+    name: "سلالة هان الصينية",
+    dwelling: "الفناء الصيني (السيهيوان Siheyuan)",
+    subtitle: "فناء تقليدي مغلق يعكس الفلسفة الكونفوشيوسية",
+    description:
+      "منزل عائلي صيني قديم تحيط به الغرف من الجهات الأربع، مصمم لخدمة الأسرة الممتدة ووفق مبادئ التوازن والانسجام الكونفوشيوسي.",
+    facts: [
+      { label: "الحقبة الزمنية", value: "سلالة هان (202 ق.م – 220 م)" },
+      { label: "المنطقة", value: "شمال الصين (تشأنغآن ولويانغ)" },
+      { label: "مواد البناء", value: "خشب، طوب رمادي، بلاط طيني" },
+      { label: "الميزة المعمارية", value: "نظام الكتف الخشبي (Dougong) والبناء الدائري" },
+      { label: "السكّان", value: "عائلة صينية ممتدة" },
+    ],
+    hotspots: [
+      {
+        id: "dougong",
+        title: "نظام الأكتاف الخشبية (Dougong)",
+        short: "حوامل خشبية متداخلة لتوزيع وزن السقف",
+        detail: "نظام هندسي خشبي مبتكر يوزع ثقل السقف على الأعمدة دون الحاجة إلى مسامير معدنية.",
+      },
+    ],
+    interior: {
+      kicker: "المظهر الداخلي",
+      title: "القاعة الرئيسية والأجواء الأسرية",
+      cta: "استكشف القاعة الرئيسية",
+      text: "تُخصص القاعة الشمالية الرئيسية لكبار السن ورؤساء العائلة، حيث تُقام الطقوس والاجتماعات الأسرية.",
+    },
+    floorPlan: {
+      kicker: "المخطط الهندسي",
+      title: "توزيع الفناء الصيني",
+      cta: "عرض المخطط",
+      text: "محور شمالي-جنوبي صارم ينظم دخول الضوء ومراتب أفراد الأسرة.",
+    },
+    artifacts: {
+      kicker: "الأدوات المنزلية",
+      title: "تحف سلالة هان",
+      cta: "عرض الآثار الصينية",
+      text: "نماذج فخارية مصغرة للمنازل ومصابيح برونزية وأوانٍ زجاجية ومرايا.",
+    },
+    dailyLife: {
+      kicker: "الحياة اليومية",
+      title: "الحياة في الفناء الصيني",
+      cta: "استكشف الحياة اليومية",
+      text: "تنسجم الحياة الأسرية اليومية مع الفصول الأربعة في الفناء المركزي المشمس.",
+    },
+    geography: {
+      kicker: "النطاق الجغرافي",
+      title: "سلالة هان الصينية",
+      cta: "عرض الخريطة",
+      text: "تمركز المعمار في السهل الشمالي للصين وحول عواصم السلالة العريقة.",
+      regionLabel: "الصين، سلالة هان (نحو 100 م)",
+    },
+    lesson: {
+      title: "الفناء الصيني (السيهيوان)",
+      intro: "كيف جسد الفناء الصيني القيم الأسرية والفلسفية لسلالة هان.",
+      blocks: [
+        { heading: "التوازن الهيكلي", body: "توزيع متناسق يعكس الاحترام المتبادل والتدرج الهرمي الأسري." },
+      ],
+    },
+    quiz: [
+      {
+        q: "ما اسم نظام الكوابيل الخشبية المتداخلة في العمارة الصينية؟",
+        choices: ["دوغونغ (Dougong)", "أتريوم", "إيوان", "محراب"],
+        explanation: "نظام الـ Dougong الخشبي وزّع أحمال الأسقف الفخارية الثقيلة بسلاسة.",
+      },
+    ],
+    timeline: [
+      { era: "هان الغربية", year: "نحو 200 ق.م", text: "اعتماد مخطط السيهيوان القياسي في الأحياء السكنية." },
+    ],
+  },
+};

@@ -1,0 +1,238 @@
+import type { Empire } from "@/types/empire";
+
+export const byzantine: Empire = {
+  id: "byzantine",
+  name: "Byzantine Empire",
+  dwelling: "Urban House",
+  subtitle: "A domed townhouse of Constantinople",
+  description:
+    "A Byzantine urban residence, rising two storeys around a small court with arched loggias, brick-and-stone walls and a domed upper hall — Roman tradition filtered through the Christian empire of Constantinople.",
+  modelPath: "/models/byzantine.glb",
+  tint: "#7f94a8",
+  camera: { azimuth: -38, elevation: 34, dist: 1.0, targetY: 0.34 },
+  facts: [
+    { label: "Period", value: "c. 10th century CE", icon: "period" },
+    { label: "Region", value: "Constantinople, Anatolia", icon: "region" },
+    { label: "Materials", value: "Brick, rubble stone, marble", icon: "materials" },
+    { label: "Distinctive feature", value: "Arched loggia + dome", icon: "feature" },
+    { label: "Typical occupants", value: "Merchant or official family", icon: "occupants" },
+  ],
+  hotspots: [
+    {
+      id: "dome",
+      title: "Domed Upper Hall",
+      short: "Brick dome over the salon",
+      detail:
+        "The reception hall (triclinium) was crowned by a light brick dome on pendentives — the same engineering as Hagia Sophia, domesticated to household scale.",
+      category: "roof",
+      anchor: [0.30, 0.99, 0.62],
+      snap: "roof",
+    },
+    {
+      id: "courtyard",
+      title: "Courtyard & Well",
+      short: "Water and light at the center",
+      detail:
+        "A compact paved court with a wellhead or cistern mouth lit the surrounding rooms — the Roman atrium shrunk to fit a dense medieval city.",
+      category: "court",
+      anchor: [0.50, 0.16, 0.50],
+      snap: "court",
+    },
+    {
+      id: "entrance",
+      title: "Arched Entrance",
+      short: "Gate to the passage",
+      detail:
+        "A single arched doorway led through a vaulted passage to the court. Upper windows, not the ground floor, carried the house's ornament — safety and quiet above the street.",
+      category: "entrance",
+      anchor: [0.50, 0.24, 0.98],
+      snap: "wall",
+    },
+    {
+      id: "brickwork",
+      title: "Brick & Stone Bands",
+      short: "Alternating courses of wall",
+      detail:
+        "Walls alternated bands of brick and rough stone — the signature striped masonry of Constantinople, both structural and decorative, often with recessed-brick technique.",
+      category: "facade",
+      anchor: [0.02, 0.44, 0.45],
+      snap: "wall",
+    },
+  ],
+  interior: {
+    kicker: "Interior View",
+    title: "Domed Reception Hall",
+    cta: "Explore Interior",
+    text: "Marble revetment below, mosaics and fresco above, silk hangings and a great candle-stand before the icons — the upper hall where the family dined and received guests beneath its brick dome.",
+    image: "/img/byzantine/interior.webp",
+  },
+  floorPlan: {
+    kicker: "Floor Plan",
+    title: "Townhouse Layout",
+    cta: "View Floor Plan",
+    text: "Storage and stables at street level; the piano nobile above with domed hall, loggia and family rooms around a compact court; cistern vaults below.",
+    image: "/img/byzantine/floor-plan.webp",
+    rooms: [
+      { name: "Passage", note: "Street to court" },
+      { name: "Courtyard", note: "Well & stair" },
+      { name: "Reception Hall", note: "Domed, upper" },
+      { name: "Loggia", note: "Arched gallery" },
+      { name: "Chapel Corner", note: "Icons" },
+      { name: "Bed Chambers", note: "Upper floor" },
+      { name: "Storerooms", note: "Ground floor" },
+      { name: "Cistern", note: "Below court" },
+    ],
+  },
+  artifacts: {
+    kicker: "Household Objects",
+    title: "Artifacts of Daily Life",
+    cta: "Explore Artifacts",
+    text: "Glass lamps, glazed tableware and ivory caskets — Constantinople's workshops filled houses with goods prized across the medieval world.",
+    image: "/img/byzantine/artifacts.webp",
+    items: [
+      { name: "Glass Lamp", purpose: "Burning oil before the icons", material: "Blown glass", context: "Cup-shaped lamps hung in polycandela rings, filling halls with points of light." },
+      { name: "Glazed Bowl", purpose: "Serving the family table", material: "Sgraffito earthenware", context: "Incised white-slip bowls with green and brown glazes were Constantinople's everyday fineware." },
+      { name: "Ivory Casket", purpose: "Keeping jewelry and relics", material: "Carved ivory", context: "Caskets carved with classical myths locked away the household's treasures." },
+      { name: "Bronze Incense Burner", purpose: "Perfuming rooms and prayer", material: "Cast bronze", context: "Incense marked prayer hours and honored guests alike." },
+      { name: "Silver Spoon", purpose: "Dining and gift-giving", material: "Stamped silver", context: "Spoons with control stamps pass through hoards from Britain to Syria." },
+      { name: "Amphora (Gunesin)", purpose: "Shipping wine and oil", material: "Fired clay", context: "Ribbed Byzantine amphorae stocked the storerooms of every merchant house." },
+    ],
+  },
+  dailyLife: {
+    kicker: "Daily Life",
+    title: "Life at Home",
+    cta: "Discover Daily Life",
+    text: "Bell and prayer ordered the hours; women managed the house and its weaving, men traded or served the court, and feast days filled the hall with guests, music and incense.",
+    image: "/img/byzantine/daily-life.webp",
+  },
+  geography: {
+    kicker: "Where It Existed",
+    title: "Byzantine Empire",
+    cta: "Explore Map",
+    text: "From Constantinople's hills to the towns of Anatolia, Greece and the Aegean, urban houses carried the empire's Roman-Christian character for a thousand years.",
+    image: "/img/byzantine/map.webp",
+    regionLabel: "Constantinople & Anatolia, c. 950 CE",
+  },
+  lesson: {
+    title: "Inside the Byzantine Urban House",
+    intro: "Rome's heir at home — domes, icons and striped masonry in the city of cities.",
+    blocks: [
+      { heading: "Historical context", body: "For over a millennium, Constantinople was Europe's greatest city. Its houses, excavated beneath modern Istanbul, show Roman domesticity adapted to a Christian medieval capital." },
+      { heading: "Architectural layout", body: "Two storeys around a small court: service below, family above; the domed hall and loggia face the court; cisterns cool the foundations." },
+      { heading: "Key features", body: "Brick domes on pendentives, arched loggias with reused marble columns, banded masonry, and the ever-present icon corner." },
+      { heading: "Daily life", body: "Monastic timekeeping, guild commerce, and the liturgical year structured household routine; hospitality was a sacred duty." },
+      { heading: "Materials & craft", body: "Brick and rubble bands, spolia marble, glazed ceramics, blown glass, silk and ivory from the city's famed workshops." },
+      { heading: "Social context", body: "The house balanced Roman memory and Orthodox faith — a merchant's comfort ordered around prayer, patronage and the image of the court." },
+    ],
+  },
+  quiz: [
+    {
+      q: "The reception hall of a Byzantine house was typically crowned by…",
+      choices: ["A timber gable", "A brick dome", "A flat earth roof", "A thatched cone"],
+      answer: 1,
+      explanation: "Light brick domes on pendentives roofed upper halls — Hagia Sophia's engineering at domestic scale.",
+    },
+    {
+      q: "Constantinople's striped walls were built by alternating…",
+      choices: ["Wood and wattle", "Brick and stone bands", "Marble and glass", "Mud and straw"],
+      answer: 1,
+      explanation: "Bands of brick and rubble stone formed the capital's signature masonry pattern.",
+    },
+    {
+      q: "Where did a Byzantine household pray?",
+      choices: ["Only at church", "Before the icon corner at home", "In the cistern", "On the roof"],
+      answer: 1,
+      explanation: "Every home kept an icon corner with lamps and incense for the daily hours of prayer.",
+    },
+    {
+      q: "Household water security came from…",
+      choices: ["River wells", "Vaulted cisterns", "Rain barrels only", "Public fountains alone"],
+      answer: 1,
+      explanation: "Rock-cut and vaulted cisterns beneath houses stored water through sieges and droughts.",
+    },
+    {
+      q: "Upper-floor ornament rather than street-level display reflected…",
+      choices: ["Building taxes", "Safety and quiet above the street", "Fear of floods", "Sumptuary laws"],
+      answer: 1,
+      explanation: "Dense medieval streets made ground floors utilitarian; beauty lived one storey up.",
+    },
+  ],
+  timeline: [
+    { era: "Foundation", year: "330 CE", text: "Constantinople dedicated; Roman houses fill the new capital's seven hills." },
+    { era: "Justinianic age", year: "c. 540 CE", text: "Hagia Sophia's dome reframes architectural ambition; urban housing peaks before the plague." },
+    { era: "Macedonian revival", year: "c. 950 CE", text: "Prosperity returns; domed townhouses and glazed wares mark the confident middle city." },
+    { era: "Komnenian era", year: "c. 1150 CE", text: "Aristocratic houses cluster near the Blachernae palace; trade swells merchant homes." },
+    { era: "Palaiologan twilight", year: "c. 1350 CE", text: "Within the walls, houses shrink and reuse older masonry as the empire contracts." },
+  ],
+  keywords: ["byzantine", "constantinople", "greece", "orthodox", "mosaic", "cistern", "triklinos", "icon", "plaster"],
+  ar: {
+    name: "الإمبراطورية البيزنطية",
+    dwelling: "البيت البيزنطي الحضري",
+    subtitle: "منزل متوسطي من الحجر والآجر في القسطنطينية",
+    description:
+      "منزل حضري من طابقين شُيّد في القسطنطينية، يجمع بين الجدران الحجرية المتينة والصهاريج السفلية، مع قاعات سكنية علوية مزينة بالأيقونات.",
+    facts: [
+      { label: "الحقبة الزمنية", value: "العهد البيزنطي المتوسط (القرن 10 م)" },
+      { label: "المنطقة", value: "القسطنطينية والبلقان والأناضول" },
+      { label: "مواد البناء", value: "حجر كلسي، قرميد أحمر، جص" },
+      { label: "الميزة المعمارية", value: "صهريج سفلي وقاعة أيقونات علوية" },
+      { label: "السكّان", value: "عائلة بيزنطية موسرة أو تاجر" },
+    ],
+    hotspots: [
+      {
+        id: "cistern",
+        title: "الصهريج السفلي",
+        short: "خزان مياه معقود تحت الأرض",
+        detail: "خزان مياه مبني تحت أرضية المنزل لتخزين مياه الأمطار وضمان توفر المياه أثناء الحصار والصيف.",
+      },
+    ],
+    interior: {
+      kicker: "المظهر الداخلي",
+      title: "قاعة الاستقبال الأيقونية (Triklinos)",
+      cta: "استكشف القاعة البيزنطية",
+      text: "قاعة علوية فسيحة تضم ركناً مخصصاً للأيقونات المقدسة وسجج الفسيفساء المعبرة عن الفن البيزنطي.",
+    },
+    floorPlan: {
+      kicker: "المخطط الهندسي",
+      title: "توزيع المنزل البيزنطي",
+      cta: "عرض المخطط",
+      text: "تُخصص الطوابق الأرضية للمخازن والصهريج، بينما ترتفع المعيشة العائلية إلى الطابق الأول.",
+    },
+    artifacts: {
+      kicker: "الأدوات المنزلية",
+      title: "آثار العصر البيزنطي",
+      cta: "عرض التحف البيزنطية",
+      text: "أيقونات خشبية، مصابيح برونزية على شكل صليب، وأوانٍ فخارية مزججة.",
+    },
+    dailyLife: {
+      kicker: "الحياة اليومية",
+      title: "الحياة في القسطنطينية",
+      cta: "استكشف الحياة اليومية",
+      text: "تتمازج الصوات والأنشطة التجارية اليومية في أسواق العاصمة الرومانية الشرقية.",
+    },
+    geography: {
+      kicker: "النطاق الجغرافي",
+      title: "الإمبراطورية البيزنطية",
+      cta: "عرض الخريطة",
+      text: "تمركز المعمار في القسطنطينية وحوض شرق البحر المتوسط.",
+      regionLabel: "القسطنطينية، نحو 950 م",
+    },
+    lesson: {
+      title: "المنزل البيزنطي الحضري",
+      intro: "كيف تواصل التراث الروماني وتطور في العاصمة البيزنطية.",
+      blocks: [
+        { heading: "عمارة القسطنطينية", body: "تلاحم الحجر والقرميد لحماية المسكن من الزلازل والحرائق." },
+      ],
+    },
+    quiz: [
+      {
+        q: "أين كان يُحفظ الماء في المنازل البيزنطية أثناء الحصار؟",
+        choices: ["في الصهاريج المقببة تحت الأرض", "في الآبار المفتوحة", "في براميل الخشب فقط", "في الأنهار المجاورة"],
+        explanation: "وفرت الصهاريج المقببة تحت البيوت أماناً مائياً استراتيجياً.",
+      },
+    ],
+    timeline: [
+      { era: "التأسيس", year: "330 م", text: "تدشين القسطنطينية وبناء المنازل على التلال السبعة." },
+    ],
+  },
+};
