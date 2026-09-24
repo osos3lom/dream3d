@@ -13,6 +13,7 @@ import { InfoPanel } from "@/components/InfoPanel";
 import { BottomCards } from "@/components/BottomCards";
 import { LessonModal, QuizModal, ArtifactsModal, TimelineModal, SectionModal, SearchOverlay } from "@/components/modals";
 import { CloseIcon } from "@/components/icons";
+import { useTranslation } from "@/i18n/translations";
 
 const Viewer = dynamic(() => import("@/components/Viewer").then((mod) => mod.Viewer), {
   ssr: false,
@@ -34,6 +35,7 @@ const getStorageItem = (key: string): string | null => {
 export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
   const router = useRouter();
   const [lang, setLang] = useState<Language>(routeLang);
+  const t = useTranslation(lang);
   const [rawViewerEmpire, setRawViewerEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
   const [rawPanelEmpire, setRawPanelEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
   
@@ -112,8 +114,8 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
   }, []);
 
   useEffect(() => {
-    document.title = `${panelEmpire.dwelling} — ${lang === "ar" ? "أطلس الإمبراطوريات" : "Empire Atlas"}`;
-  }, [panelEmpire, lang]);
+    document.title = `${panelEmpire.dwelling} — ${t.siteTitle}`;
+  }, [panelEmpire, t.siteTitle]);
 
   const selectEmpire = useCallback(
     (id: string) => {
@@ -223,7 +225,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
         </aside>
       </div>
 
-      <section className="px-3 pb-3 pt-1 sm:px-4 xl:hidden" aria-label="Selected dwelling">
+      <section className="px-3 pb-3 pt-1 sm:px-4 xl:hidden" aria-label="Selected villa">
         <InfoPanel
           empire={panelEmpire}
           flow
@@ -236,7 +238,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
         />
       </section>
 
-      <section className="px-3 pb-6 pt-1 sm:px-4 xl:px-5" aria-label="Explore the dwelling">
+      <section className="px-3 pb-6 pt-1 sm:px-4 xl:px-5" aria-label="Explore the villa">
         <BottomCards empire={panelEmpire} onOpen={(s) => setModal(s)} lang={lang} />
       </section>
 
@@ -251,7 +253,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
           >
             <div className="flex flex-none items-center justify-between border-b border-line-warm px-4 py-3">
               <span className="font-display text-[1.15rem] font-bold text-ink">
-                {lang === "ar" ? "أطلس الإمبراطوريات" : "Empire Atlas"}
+                {t.siteTitle}
               </span>
               <button
                 onClick={() => setMenuOpen(false)}

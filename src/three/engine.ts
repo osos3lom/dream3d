@@ -477,6 +477,14 @@ export class ViewerEngine {
     const inner = sceneObj;
     group.add(inner);
 
+    // Blender exports carry their own sun lamps and delivery camera; the
+    // stage has its own rig, so only the geometry is kept
+    const strays: THREE.Object3D[] = [];
+    inner.traverse((o) => {
+      if ((o as THREE.Light).isLight || (o as THREE.Camera).isCamera) strays.push(o);
+    });
+    strays.forEach((o) => o.removeFromParent());
+
     const box = new THREE.Box3().setFromObject(inner);
     const size = box.getSize(new THREE.Vector3());
     const center = box.getCenter(new THREE.Vector3());

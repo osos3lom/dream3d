@@ -1,17 +1,17 @@
-# Empire Atlas
+# Heritage Villa Studio
 
-**Explore how civilizations lived.** An interactive 3D atlas of domestic architecture across eight
-historical empires. Turn each dwelling on its plinth, read the features pinned to its stonework, and
-follow the household through its rooms, its objects and its geography.
+**Saudi heritage styles as modern villas.** An interactive 3D studio of five Saudi architectural
+traditions, each built as a contemporary villa. Turn each villa on its plinth, read the signature
+motifs pinned to its walls and roofline, and follow it through its courtyard, plan, street and region.
 
-![Empire Atlas](./public/og-cover.jpg)
+![Heritage Villa Studio](./public/og-cover.jpg)
 
 ---
 
 ## Contents
 
 - [What it is](#what-it-is)
-- [The dwellings](#the-dwellings)
+- [The styles](#the-styles)
 - [How it was made](#how-it-was-made)
 - [Running it](#running-it)
 - [How it is put together](#how-it-is-put-together)
@@ -23,66 +23,73 @@ follow the household through its rooms, its objects and its geography.
 
 ## What it is
 
-Eight dwellings, one for each empire, each modelled in 3D and annotated with the architectural
-features that made it work as a home. The viewer is the centre of the app: a turntable stage lit like
-a museum vitrine, where a dwelling can be orbited, zoomed, sectioned and read.
+Five modern villas, one per heritage style, each modelled in 3D with the motifs that identify the style.
+The viewer is the centre of the app: a turntable stage where a villa can be orbited, zoomed, sectioned
+and read.
 
-**What you can do**
+|                           |                                                                                                        |
+| ------------------------- | ------------------------------------------------------------------------------------------------------ |
+| **Turn the villa**        | Orbit, pan and zoom the model, or drive it from the keyboard (arrows, `+`/`-`, `Home`)                 |
+| **Read its motifs**       | Five hotspot pins per villa, fixed to the geometry; hover one for its annotation, click to push in     |
+| **See through it**        | Wireframe and x-ray section layers, plus a turntable reference grid                                    |
+| **Go deeper**             | Courtyard view, a true plan section, signature motifs, the street approach and the style's region      |
+| **Learn and test**        | A written lesson per style, a timeline, and a quiz                                                     |
+| **Search everything**     | `⌘K` finds styles, villas, motifs and rooms                                                            |
 
-|                           |                                                                                                                         |
-| ------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
-| **Turn the dwelling**     | Orbit, pan and zoom the model, or drive it from the keyboard (arrows, `+`/`-`, `Home`)                                  |
-| **Read its architecture** | Four hotspot pins per dwelling, fixed to the geometry itself; hover one for its annotation, click to push the camera in |
-| **See through it**        | Wireframe and x-ray section layers, plus a turntable reference grid                                                     |
-| **Go deeper**             | Interior views, floor plans, household objects, daily life and the empire's geography                                   |
-| **Learn and test**        | A written lesson per empire, a timeline, and a quiz                                                                     |
-| **Search everything**     | `⌘K` finds empires, dwellings and individual architectural features                                                     |
+The whole app is bilingual (English / Arabic, with RTL layout).
 
 ---
 
-## The dwellings
+## The styles
 
-| Empire           | Dwelling        | Period                    |
-| ---------------- | --------------- | ------------------------- |
-| Ancient Egypt    | Courtyard House | c. 1500 BCE (New Kingdom) |
-| Persian Empire   | Noble Residence | c. 500 BCE (Achaemenid)   |
-| Han China        | Siheyuan        | c. 100 CE (Eastern Han)   |
-| Roman Empire     | Roman Domus     | 1st century CE            |
-| Byzantine Empire | Urban House     | c. 10th century CE        |
-| Inca Empire      | Stone Dwelling  | c. 15th century CE        |
-| Ottoman Empire   | Courtyard Home  | c. 17th century CE        |
-| Mughal Empire    | Haveli          | c. 17th century CE        |
+| Style           | Region           | Signature motifs                                              | How the villa reads                                                             |
+| --------------- | ---------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Najdi           | Najd             | Furjat, shurfat, tarma                                        | Courtyard villa in earthen render, dark-backed triangle band, corner burj        |
+| Salmani         | Najd (Riyadh)    | Deep shadow lines, modular facade, triangle crown             | Stone volume cantilevered over glass, deep slot windows, entry portal, pool court |
+| Hijazi          | Hijaz            | Roshan / mashrabiya lattice, coral coursing, high vents       | Three-storey coral-stone block with stacked rawashin and a latticed roof terrace |
+| Asiri           | Asir             | Al-Qatt Al-Asiri painting, slate courses, qamariyat           | Tapering stone towers on a terrace, ribbed walls, painted friezes, glazed wing   |
+| Eastern Coastal | Eastern Province | Coral & gypsum, carved screens, danchal, riwaq, badgir        | Gypsum courtyard house on a coral base, pointed arcade, two-tone Qatif court      |
 
-Adding a ninth means adding a data file and its assets. The viewer and the UI are entirely
-data-driven and need no changes. See [`src/types/empire.ts`](src/types/empire.ts) for the contract.
+Adding a sixth style means adding a data file in [`src/data/styles/`](src/data/styles), a model and its
+images. The viewer and the UI are data-driven. [`src/types/empire.ts`](src/types/empire.ts) is the
+contract (it keeps its name from the app's first life as an empire atlas).
 
 ---
 
 ## How it was made
 
-This project was produced end to end with generative tools, each doing the part it is best at.
+### The models — Blender, procedurally
 
-### The application — Kimi K3
+Each villa is generated by a Python script run in Blender 5.2 through the 3D Jutsu Blender MCP:
 
-The entire codebase was generated with **Kimi K3**: the React application, the three.js viewer, the
-design system and the empire content.
+- [`scripts/blender/villa_lib.py`](scripts/blender/villa_lib.py) is a small kit: walls with real
+  openings, glazing, furjat bands, shurfat, rawashin, lattice, ribs, palms, pools, a plan-section cutter
+  and the render helpers.
+- One script per style ([`najdi.py`](scripts/blender/najdi.py), [`salmani.py`](scripts/blender/salmani.py),
+  [`hijazi.py`](scripts/blender/hijazi.py), [`asiri.py`](scripts/blender/asiri.py),
+  [`eastern.py`](scripts/blender/eastern.py)) builds the villa, declares its hotspot anchors in metres,
+  and lists its camera shots.
 
-### The 3D models — Tripo 3D
+Geometry is merged into one mesh per material, so every mesh in the exported GLB carries a single
+flat PBR material (`public/models/*.glb`, 0.6–1.5 MB each, no textures). The build prints the hotspot
+anchors already converted to the viewer's normalised box space. The Blender exports include a sun
+rig and a camera; the viewer drops both on load.
 
-All eight dwellings were modelled with **[Tripo AI](https://studio.tripo3d.com/?utm_source=brand&utm_medium=creator&utm_campaign=suj)**, exported as
-Draco-compressed glTF (`public/models/*.glb`, ~2.1 MB each). They arrive as single-mesh models with
-baked textures, which the viewer normalises into a consistent frame at load.
+### The imagery — rendered from the same models
 
-### The imagery — GPT Image 2.0, run through Tripo
+Every image in `public/img/<style>/` comes from the model it describes, rendered in Eevee:
 
-The 56 illustrations were generated with **GPT Image 2.0**: hero cutaways, interiors, floor plans,
-artefact studies, daily-life scenes and empire maps.
+| Card            | Shot                                                                      |
+| --------------- | ------------------------------------------------------------------------- |
+| Hero, thumbnail | Three-quarter aerial views                                                |
+| Courtyard view  | Eye-level in the court, terrace or garden                                 |
+| Floor plan      | The model sliced at 2.4 m (3.2 m for Asiri), caps filled dark, top ortho  |
+| Signature motifs| A close-up of the facade's motifs                                         |
+| Living here     | Eye-level street approach                                                 |
 
-Worth recording: these were generated through **[Tripo's GPT Image 2.0](https://studio.tripo3d.com/?utm_source=brand&utm_medium=creator&utm_campaign=suj)** rather than going
-direct. Tripo handles batch requests well, and in practice batching the image set through it came
-back noticeably faster than running the same batch against GPT Image 2 directly. That matters when a
-single empire needs seven consistent images and the set needs regenerating as the art direction
-settles.
+[`scripts/compose_images.py`](scripts/compose_images.py) lays the transparent renders onto the app's
+paper tone and writes WebP. The region maps are drawn by [`scripts/make_maps.py`](scripts/make_maps.py)
+from a simplified outline of Saudi Arabia (schematic, not for navigation).
 
 ---
 
@@ -113,15 +120,19 @@ src/
 ├─ components/
 │  ├─ Viewer.tsx           canvas host, tool rail, layer menu, request sequencing
 │  ├─ HotspotLayer.tsx     screen-space pins and their hover annotations
-│  ├─ EmpireLibrary.tsx    the empire rail (desktop) and drawer contents (mobile)
-│  ├─ InfoPanel.tsx        selected-dwelling detail, in a rail or in the page flow
+│  ├─ EmpireLibrary.tsx    the style rail (desktop) and drawer contents (mobile)
+│  ├─ InfoPanel.tsx        selected-villa detail, in a rail or in the page flow
 │  ├─ BottomCards.tsx      the five exploration cards
 │  ├─ Banner.tsx           dismissible attribution bar
 │  ├─ modals.tsx           lesson, quiz, artefacts, timeline, sections, ⌘K search
 │  └─ ui/                  shadcn/ui primitives
 ├─ data/
-│  └─ empires/*.ts         one file per empire: copy, facts, hotspots, lesson, quiz, timeline
-└─ types/empire.ts         the data contract every empire satisfies
+│  └─ styles/*.ts          one file per style: copy, facts, hotspots, lesson, quiz, timeline (EN + AR)
+└─ types/empire.ts         the data contract every style satisfies
+scripts/
+├─ blender/                procedural villa kit + one build script per style
+├─ compose_images.py       renders → public/img/<style>/*.webp
+└─ make_maps.py            schematic region maps
 ```
 
 **Stack** — React 19 · TypeScript 5.9 · Vite 7 · Tailwind CSS 3.4 · three.js 0.185 (WebGPU renderer
@@ -130,8 +141,8 @@ with TSL node materials) · GSAP 3 · three-mesh-bvh · shadcn/ui
 **Design language** — a warm parchment palette on Cormorant Garamond and Inter, defined once as CSS
 custom properties in [`src/index.css`](src/index.css) and bridged into Tailwind and shadcn tokens.
 
-**Responsive behaviour** — the three-column desktop stage engages at 1280px. Below that the empire
-library moves into a drawer behind a hamburger, the dwelling detail reads inline beneath the model,
+**Responsive behaviour** — the three-column desktop stage engages at 1280px. Below that the style
+library moves into a drawer behind a hamburger, the villa detail reads inline beneath the model,
 and the exploration cards step from five columns to three, two, then one.
 
 ---
@@ -150,16 +161,16 @@ visible from the resting camera. The authored anchor only breaks ties.
 gradient would be run through ACES tone mapping and come out grey, so the backdrop is painted in CSS
 behind the canvas and keeps the exact palette of the surrounding UI.
 
-**Switching dwellings is a turntable spin.** The dwelling on stage spins up about its own axis and,
+**Switching villas is a turntable spin.** The villa on stage spins up about its own axis and,
 at the point where it is turning fastest, the next one takes over the same rotation and carries it to
 rest. Nothing leaves the ground, which is what avoids the floor plane slicing through a colonnade or
-an open courtyard, and lets the dwelling keep casting its shadow throughout.
+an open courtyard, and lets the villa keep casting its shadow throughout.
 
 **Shadows are drawn on demand.** Orbiting moves the camera, not the building, so the shadow map is
 refreshed only when the geometry actually changes rather than every frame.
 
-**Recently seen dwellings stay resident.** Six models are kept parsed in memory, and hovering an
-empire in the library begins fetching it, so the click that follows lands on a model that is already
+**Recently seen villas stay resident.** Six models are kept parsed in memory, and hovering a
+style in the library begins fetching it, so the click that follows lands on a model that is already
 downloaded, parsed, BVH-built and hotspot-resolved, instead of paying for all of that mid-animation.
 
 **Pins cost nothing per frame.** The projection loop holds element handles by ref, takes the stage

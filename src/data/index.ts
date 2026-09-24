@@ -1,16 +1,15 @@
 import type { Empire } from "@/types/empire";
-import { roman } from "./empires/roman";
-import { egypt } from "./empires/egypt";
-import { persian } from "./empires/persian";
-import { han } from "./empires/han";
-import { byzantine } from "./empires/byzantine";
-import { ottoman } from "./empires/ottoman";
-import { mughal } from "./empires/mughal";
-import { inca } from "./empires/inca";
+import { najdi } from "./styles/najdi";
+import { salmani } from "./styles/salmani";
+import { hijazi } from "./styles/hijazi";
+import { asiri } from "./styles/asiri";
+import { eastern } from "./styles/eastern";
 
 import type { Language } from "@/types/i18n";
 
-export const EMPIRES: Empire[] = [roman, egypt, persian, han, byzantine, ottoman, mughal, inca];
+/** The five heritage styles, each modelled as a modern villa. The data
+ *  contract is still named `Empire` from the app's first life as an atlas. */
+export const EMPIRES: Empire[] = [najdi, salmani, hijazi, asiri, eastern];
 
 export const empireById = (id: string): Empire => EMPIRES.find((e) => e.id === id) ?? EMPIRES[0];
 
@@ -112,7 +111,7 @@ export function getLocalizedEmpire(empire: Empire, lang: Language): Empire {
   return empire;
 }
 
-export const DEFAULT_EMPIRE_ID = "roman";
+export const DEFAULT_EMPIRE_ID = "najdi";
 
 /** Resolve per-empire image paths (thumbnail derived from hero set) */
 export const empireImages = (e: Empire) => ({
@@ -138,9 +137,9 @@ export function buildSearchIndex(lang: Language = "en"): SearchEntry[] {
   const out: SearchEntry[] = [];
   for (const raw of EMPIRES) {
     const e = getLocalizedEmpire(raw, lang);
-    const dwellingSub = lang === "ar" ? `مسكن ${e.name}` : `Dwelling of ${e.name}`;
+    const dwellingSub = lang === "ar" ? `فيلا الطراز ${e.name}` : `${e.name} style villa`;
     const floorPlanSub = lang === "ar" ? `مخطط ${e.dwelling}` : `${e.dwelling} floor plan`;
-    const relatedSub = lang === "ar" ? `مرتبط بـ ${e.name}` : `Related to ${e.name}`;
+    const relatedSub = lang === "ar" ? `مرتبط بالطراز ${e.name}` : `Related to ${e.name} style`;
 
     out.push({ kind: "empire", title: e.name, subtitle: `${e.dwelling} — ${e.subtitle}`, empireId: e.id });
     out.push({ kind: "dwelling", title: e.dwelling, subtitle: dwellingSub, empireId: e.id });
