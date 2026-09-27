@@ -22,6 +22,7 @@ import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
 import gsap from "gsap";
 import type { Empire, Vec3 } from "@/types/empire";
+import { asset } from "@/lib/assets";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 (THREE.BufferGeometry.prototype as any).computeBoundsTree = computeBoundsTree;
@@ -126,7 +127,7 @@ export class ViewerEngine {
     this.manager.onProgress = (_u, loaded, total) => {
       if (this.onLoadProgress && total > 0) this.onLoadProgress(Math.round((loaded / total) * 100));
     };
-    const draco = new DRACOLoader(this.manager).setDecoderPath("/draco/gltf/");
+    const draco = new DRACOLoader(this.manager).setDecoderPath(asset("/draco/gltf/"));
     this.loader = new GLTFLoader(this.manager);
     this.loader.setDRACOLoader(draco);
   }

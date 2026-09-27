@@ -1,9 +1,9 @@
-"use client";
-
 import { memo, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three/webgpu";
 import gsap from "gsap";
 import type { Empire } from "@/types/empire";
+import type { Language } from "@/types/i18n";
+import { useTranslation } from "@/i18n/translations";
 import type { ViewerEngine } from "@/three/engine";
 
 interface Props {
@@ -15,6 +15,7 @@ interface Props {
   onHover: (id: string | null) => void;
   onActivate: (id: string | null) => void;
   visible: boolean;
+  lang: Language;
 }
 
 const TIP_W = 224;
@@ -37,7 +38,9 @@ export const HotspotLayer = memo(function HotspotLayer({
   onHover,
   onActivate,
   visible,
+  lang,
 }: Props) {
+  const t = useTranslation(lang);
   const tipRef = useRef<HTMLDivElement>(null);
   const pinRefs = useRef(new Map<string, HTMLElement>());
   const size = useRef({ w: 0, h: 0 });
@@ -186,7 +189,7 @@ export const HotspotLayer = memo(function HotspotLayer({
             <span className="cat">{hovered.category.replace("-", " ")}</span>
             <span className="t">{hovered.title}</span>
             <span className="d">{hovered.short}</span>
-            <span className="hint">Click to explore</span>
+            <span className="hint">{t.viewer.pinHint}</span>
           </>
         )}
       </div>

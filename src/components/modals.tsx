@@ -1,6 +1,5 @@
-"use client";
-
-import { memo, useState } from "react";
+import { memo, useEffect, useState } from "react";
+import { useScrollLock } from "@/hooks/use-scroll-lock";
 import type { Empire } from "@/types/empire";
 import type { Language } from "@/types/i18n";
 import { useTranslation } from "@/i18n/translations";
@@ -74,7 +73,7 @@ export const QuizModal = memo(function QuizModal({ empire, onClose, lang = "en" 
       {!done ? (
         <>
           <div className="tl-track mb-5"><div className="tl-fill" style={{ width: `${(step / empire.quiz.length) * 100}%` }} /></div>
-          <h3 className="font-display text-[1.3rem] font-bold leading-snug text-ink">{q.q}</h3>
+          <h3 className="font-display text-[1.15rem] font-bold leading-snug text-ink sm:text-[1.3rem]">{q.q}</h3>
           <div className="mt-4 space-y-2">
             {q.choices.map((c, i) => (
               <button
@@ -121,7 +120,7 @@ export const QuizModal = memo(function QuizModal({ empire, onClose, lang = "en" 
 });
 
 /* ═══ Artifacts ═══ */
-export const ArtifactsModal = memo(function ArtifactsModal({ empire, onClose, lang = "en" }: ModalBaseProps) {
+export const ArtifactsModal = memo(function ArtifactsModal({ empire, onClose, lang: _lang = "en" }: ModalBaseProps) {
   return (
     <ModalShell title={empire.artifacts.title} kicker={`${empire.artifacts.kicker} · ${empire.name}`} onClose={onClose} wide>
       <div className="relative overflow-hidden rounded-xl border border-line-warm">
@@ -160,18 +159,18 @@ export const TimelineModal = memo(function TimelineModal({ empire, onClose, lang
           max={empire.timeline.length - 1}
           value={idx}
           onChange={(e) => setIdx(Number(e.target.value))}
-          className="w-full accent-[#a55338]"
+          className="h-11 w-full accent-[#a55338]"
           aria-label="Timeline position"
         />
-        <div className="mt-2 flex justify-between text-[0.68rem] font-medium uppercase tracking-wide text-ink-muted">
+        <div className="mt-2 flex justify-between gap-1 text-[0.62rem] font-medium uppercase tracking-wide text-ink-muted sm:text-[0.68rem]">
           {empire.timeline.map((t2, i) => (
-            <button key={i} onClick={() => setIdx(i)} className={`max-w-[90px] text-center leading-tight transition-colors ${i === idx ? "text-terracotta" : ""}`}>
+            <button key={i} onClick={() => setIdx(i)} className={`min-h-[40px] max-w-[90px] flex-1 text-center leading-tight transition-colors ${i === idx ? "text-terracotta" : ""}`}>
               {t2.year}
             </button>
           ))}
         </div>
       </div>
-      <div className="mt-6 rounded-2xl border border-line-warm bg-paper-deep p-6 text-center">
+      <div className="mt-6 rounded-2xl border border-line-warm bg-paper-deep p-4 text-center sm:p-6">
         <div className="kicker !text-terracotta">{item.era}</div>
         <div className="font-display mt-1 text-[1.9rem] font-bold text-ink">{item.year}</div>
         <p className="font-display mx-auto mt-2 max-w-[46ch] text-[1.05rem] leading-snug text-ink-soft">{item.text}</p>
@@ -194,7 +193,7 @@ export const SectionModal = memo(function SectionModal({
   empire,
   section,
   onClose,
-  lang = "en",
+  lang: _lang = "en",
 }: ModalBaseProps & {
   section: "interior" | "floorPlan" | "dailyLife" | "geography";
 }) {
@@ -234,14 +233,27 @@ export const SearchOverlay = memo(function SearchOverlay({
   lang?: Language;
 }) {
   const t = useTranslation(lang);
+  useScrollLock(true);
   const index = buildSearchIndex(lang);
   const [q, setQ] = useState("");
+
+  /* Esc closes it, as it does every other overlay in the app. */
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [onClose]);
   const results = q.trim()
     ? index.filter((e) => `${e.title} ${e.subtitle}`.toLowerCase().includes(q.toLowerCase())).slice(0, 14)
     : index.filter((e) => e.kind === "empire");
 
   return (
-    <div className="overlay-backdrop flex items-start justify-center p-4 pt-[10vh]" onClick={onClose}>
+    <div
+      className="overlay-backdrop flex items-start justify-center p-3 pt-[max(3dvh,var(--safe-top))] sm:p-4 sm:pt-[10dvh]"
+      onClick={onClose}
+    >
       <div className="modal-panel w-full max-w-[560px] overflow-hidden" onClick={(e) => e.stopPropagation()} role="dialog" aria-modal="true" aria-label="Search">
         <div className="flex items-center gap-3 border-b border-line-warm px-5 py-4">
           <SearchIcon className="h-5 w-5 flex-none text-ink-muted" />
@@ -253,18 +265,18 @@ export const SearchOverlay = memo(function SearchOverlay({
             className="font-display w-full bg-transparent text-[1.1rem] italic text-ink outline-none placeholder:text-ink-muted"
             aria-label="Search"
           />
-          <button onClick={onClose} className="rounded-md p-1 text-ink-muted hover:text-ink" aria-label="Close search">
+          <button onClick={onClose} className="flex h-11 w-11 flex-none items-center justify-center rounded-md text-ink-muted hover:text-ink sm:h-9 sm:w-9" aria-label="Close search">
             <CloseIcon className="h-4 w-4" />
           </button>
         </div>
-        <div className="atlas-scroll max-h-[46vh] overflow-y-auto p-2" role="listbox">
+        <div className="atlas-scroll max-h-[56dvh] overflow-y-auto p-2 sm:max-h-[46dvh]" role="listbox">
           {results.length === 0 && <p className="font-display px-3 py-6 text-center italic text-ink-muted">{t.search.noResults}</p>}
           {results.map((r, i) => (
             <button
               key={`${r.empireId}-${r.title}-${i}`}
               role="option"
               aria-selected={false}
-              className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-paper-deep rtl:text-right"
+              className="flex min-h-[52px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-paper-deep rtl:text-right"
               onClick={() => onPick(r.empireId, r.hotspotId)}
             >
               <span className="flex-none rounded-md border border-line-warm bg-surface px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wider text-terracotta">

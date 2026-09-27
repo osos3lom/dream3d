@@ -6,10 +6,25 @@ import { asiri } from "./styles/asiri";
 import { eastern } from "./styles/eastern";
 
 import type { Language } from "@/types/i18n";
+import { asset } from "@/lib/assets";
+
+/** The dataset stores `public/` paths root-absolute (`/models/najdi.glb`).
+ *  Under a GitHub Pages subpath those have to be re-based onto Vite's
+ *  BASE_URL, so it happens once here and every consumer — viewer, panels,
+ *  modals — reads paths that are already correct. */
+const rebase = (e: Empire): Empire => ({
+  ...e,
+  modelPath: asset(e.modelPath),
+  interior: { ...e.interior, image: asset(e.interior.image) },
+  floorPlan: { ...e.floorPlan, image: asset(e.floorPlan.image) },
+  artifacts: { ...e.artifacts, image: asset(e.artifacts.image) },
+  dailyLife: { ...e.dailyLife, image: asset(e.dailyLife.image) },
+  geography: { ...e.geography, image: asset(e.geography.image) },
+});
 
 /** The five heritage styles, each modelled as a modern villa. The data
  *  contract is still named `Empire` from the app's first life as an atlas. */
-export const EMPIRES: Empire[] = [najdi, salmani, hijazi, asiri, eastern];
+export const EMPIRES: Empire[] = [najdi, salmani, hijazi, asiri, eastern].map(rebase);
 
 export const empireById = (id: string): Empire => EMPIRES.find((e) => e.id === id) ?? EMPIRES[0];
 
@@ -115,8 +130,8 @@ export const DEFAULT_EMPIRE_ID = "najdi";
 
 /** Resolve per-empire image paths (thumbnail derived from hero set) */
 export const empireImages = (e: Empire) => ({
-  thumbnail: `/img/${e.id}/thumbnail.webp`,
-  hero: `/img/${e.id}/hero.webp`,
+  thumbnail: asset(`/img/${e.id}/thumbnail.webp`),
+  hero: asset(`/img/${e.id}/hero.webp`),
   interior: e.interior.image,
   floorPlan: e.floorPlan.image,
   artifacts: e.artifacts.image,

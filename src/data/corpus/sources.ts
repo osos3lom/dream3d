@@ -1,0 +1,155 @@
+/** The citation register — the only place source material is named.
+ *
+ *  Every cultural claim in the application cites a `Source.id` from this file.
+ *  `SOURCE_IDS` is exported as a const tuple so the design-spec schema can
+ *  narrow citations to `z.enum(SOURCE_IDS)`: a fabricated reference then fails
+ *  validation instead of reaching a reviewer. There is deliberately no
+ *  free-text source field anywhere else in the codebase.
+ *
+ *  Admission standard. Prefer, in order: the official registry and government
+ *  publications; UNESCO inscriptions; academic work; museum and archive
+ *  catalogues; documented field survey. Reputable press is admissible but
+ *  weak, and a claim resting only on press is reported as thin by the KPI
+ *  sheet. General-interest blogs and content farms are not admissible at all —
+ *  several circulate confident but unsourced accounts of Saudi regional
+ *  architecture, and admitting one would quietly undermine every claim
+ *  downstream of it.
+ *
+ *  `characterIds` records which characters a source actually covers.
+ *  `culturalLint` rejects a citation whose source does not cover the character
+ *  being described, which is the most common way a genuine source ends up
+ *  attached to the wrong claim. */
+
+import type { Source, SourceId } from "@/types/provenance";
+
+/** Seed register. This is the starting set, verified against the publications
+ *  themselves; it is expected to grow substantially as each character's
+ *  reference material is authored, and the per-character design guidelines
+ *  published by DASC are the primary target for that work. */
+export const SOURCES: Source[] = [
+  {
+    id: "dasc-architecture-map-2025",
+    kind: "official",
+    title: "Saudi Architecture Characters Map",
+    titleAr: "طابع العمارة السعودية",
+    publisher: "Architecture and Design Commission, Ministry of Culture",
+    year: 2025,
+    locator: "https://architsaudi.dasc.gov.sa/",
+    accessed: "2026-09-27",
+    isOfficialRegistry: true,
+    // The registry defines all nineteen characters; it is cited by every
+    // official-map character record, which the CI provenance gate enforces.
+    characterIds: [
+      "najdi", "northern-najdi", "eastern-najdi", "tabuk-coast", "al-madinah",
+      "al-madinah-rural", "taif", "coastal-hijazi", "aseer-slopes",
+      "sarawat-mountains", "tihamah-coast", "tihamah-foothills",
+      "abha-highlands", "bisha-desert", "farasan-islands", "najran",
+      "al-qatif", "al-ahsa-oasis", "eastern-coast",
+    ],
+  },
+  {
+    id: "dasc-design-guidelines",
+    kind: "official",
+    title: "Saudi Architecture Design Guidelines",
+    titleAr: "الموجهات التصميمية للعمارة السعودية",
+    publisher: "Architecture and Design Commission, Ministry of Culture",
+    locator: "https://architsaudi.dasc.gov.sa/en/design-guidelines",
+    accessed: "2026-09-27",
+    // Per-character guideline documents. Deliberately left without
+    // `characterIds` until each document has actually been read and the claims
+    // drawn from it recorded — an unread source must not be citable.
+  },
+  {
+    id: "unesco-whc-1329-at-turaif",
+    kind: "unesco",
+    title: "At-Turaif District in ad-Dir'iyah (World Heritage List ref. 1329)",
+    publisher: "UNESCO World Heritage Centre",
+    year: 2010,
+    locator: "https://whc.unesco.org/en/list/1329/",
+    accessed: "2026-09-27",
+    characterIds: ["najdi"],
+  },
+  {
+    id: "unesco-whc-1361-historic-jeddah",
+    kind: "unesco",
+    title: "Historic Jeddah, the Gate to Makkah (World Heritage List ref. 1361)",
+    publisher: "UNESCO World Heritage Centre",
+    year: 2014,
+    locator: "https://whc.unesco.org/en/list/1361/",
+    accessed: "2026-09-27",
+    characterIds: ["coastal-hijazi"],
+  },
+  {
+    id: "unesco-whc-1563-al-ahsa-oasis",
+    kind: "unesco",
+    title: "Al-Ahsa Oasis, an Evolving Cultural Landscape (World Heritage List ref. 1563)",
+    publisher: "UNESCO World Heritage Centre",
+    year: 2018,
+    locator: "https://whc.unesco.org/en/list/1563/",
+    accessed: "2026-09-27",
+    characterIds: ["al-ahsa-oasis"],
+  },
+  {
+    id: "unesco-ich-01261-al-qatt-al-asiri",
+    kind: "unesco",
+    title:
+      "Al-Qatt Al-Asiri, female traditional interior wall decoration in Asir, Saudi Arabia " +
+      "(Representative List of the Intangible Cultural Heritage of Humanity, ref. 01261)",
+    publisher: "UNESCO",
+    year: 2017,
+    locator:
+      "https://ich.unesco.org/en/RL/al-qatt-al-asiri-female-traditional-interior-wall-decoration-in-asir-saudi-arabia-01261",
+    accessed: "2026-09-27",
+    // Note for authors: this inscription describes an INTERIOR practice. The
+    // al-qatt element record restricts `placement.surfaces` to "interior"
+    // accordingly, and that restriction is a regression test, not a preference.
+    characterIds: ["aseer-slopes", "abha-highlands", "sarawat-mountains"],
+  },
+];
+
+/** Const tuple of every registered id, for schema narrowing.
+ *  Regenerated by `scripts/studio/build-corpus.mjs`; kept in sync by CI. */
+export const SOURCE_IDS = [
+  "dasc-architecture-map-2025",
+  "dasc-design-guidelines",
+  "unesco-whc-1329-at-turaif",
+  "unesco-whc-1361-historic-jeddah",
+  "unesco-whc-1563-al-ahsa-oasis",
+  "unesco-ich-01261-al-qatt-al-asiri",
+] as const;
+
+export type RegisteredSourceId = (typeof SOURCE_IDS)[number];
+
+const BY_ID = new Map<string, Source>(SOURCES.map((s) => [s.id, s]));
+
+export const sourceById = (id: SourceId): Source | undefined => BY_ID.get(id);
+
+/** Whether a source is registered. The CI provenance gate walks every citation
+ *  in the corpus through this. */
+export const isRegisteredSource = (id: string): id is RegisteredSourceId =>
+  BY_ID.has(id);
+
+/** Whether a source actually covers a character. Used by `culturalLint` to
+ *  catch a real source cited against the wrong character. A source with no
+ *  `characterIds` has not been read closely enough to cite yet, so this
+ *  returns false rather than waving it through. */
+export function sourceCovers(id: SourceId, characterId: string): boolean {
+  const s = BY_ID.get(id);
+  return !!s?.characterIds?.includes(characterId);
+}
+
+/** Relative weight, strongest first, for the corroboration KPI. */
+const KIND_RANK: Record<Source["kind"], number> = {
+  official: 0,
+  unesco: 1,
+  academic: 2,
+  museum: 3,
+  survey: 4,
+  "field-photo": 5,
+  press: 6,
+};
+
+export const sourceRank = (id: SourceId): number => {
+  const s = BY_ID.get(id);
+  return s ? KIND_RANK[s.kind] : Number.MAX_SAFE_INTEGER;
+};

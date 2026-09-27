@@ -61,6 +61,7 @@ export const UI_TRANSLATIONS = {
       tipText: "Drag to rotate. Scroll to zoom. Hover a pin on the building to read it.",
       loading: "Loading",
       preparing: "Preparing the studio…",
+      pinHint: "Click to explore",
     },
     bottomCards: {
       title: "Exploration Modules",
@@ -221,6 +222,7 @@ export const UI_TRANSLATIONS = {
       tipText: "اسحب للتدوير. استخدم التكبير والتصغير. حرك المؤشر فوق أي نقطة تفاعلية على المبنى لقراءتها.",
       loading: "جاري تحميل",
       preparing: "جاري تجهيز الاستوديو...",
+      pinHint: "اضغط للاستكشاف",
     },
     bottomCards: {
       title: "وحدات الاستكشاف التفصيلية",

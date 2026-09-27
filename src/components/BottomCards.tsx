@@ -1,5 +1,3 @@
-"use client";
-
 import { memo } from "react";
 import type { Language } from "@/types/i18n";
 import type { Empire, EmpireSection } from "@/types/empire";
@@ -39,7 +37,7 @@ export const BottomCards = memo(function BottomCards({ empire, onOpen, lang: _la
             <span className="kicker !text-[0.66rem]">{data.kicker}</span>
             <h3 className="font-display mt-0.5 truncate text-[1.02rem] font-bold leading-tight text-ink">{data.title}</h3>
           </div>
-          <div className="relative mt-2 aspect-[3/2] w-full overflow-hidden rounded-lg border border-line-warm bg-paper-deep">
+          <div className="relative mt-2 aspect-[16/9] w-full overflow-hidden rounded-lg border border-line-warm bg-paper-deep sm:aspect-[3/2]">
             <img
               src={data.image}
               alt={data.title}
@@ -50,7 +48,7 @@ export const BottomCards = memo(function BottomCards({ empire, onOpen, lang: _la
             {compass && <CompassRose />}
           </div>
           <button
-            className="btn-outline w-full flex-none !mt-2.5 !justify-between !rounded-lg !border-line-warm !py-2 px-3 !text-[0.78rem]"
+            className="btn-outline w-full flex-none !mt-2.5 !justify-between !rounded-lg !border-line-warm !py-2.5 px-3 !text-[0.8rem]"
             onClick={() => onOpen(key)}
           >
             {data.cta}

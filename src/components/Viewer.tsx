@@ -1,5 +1,3 @@
-"use client";
-
 import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { Empire } from "@/types/empire";
 import { EMPIRES } from "@/data";
@@ -270,12 +268,17 @@ export const Viewer = memo(function Viewer({
         onHover={setHoverId}
         onActivate={setActiveId}
         visible={markersVisible && layers.labels}
+        lang={lang}
       />
 
-      {/* ── tool rail ── */}
-      <div className="absolute left-2 top-1/2 z-30 -translate-y-1/2 md:left-3 rtl:right-2 rtl:left-auto md:rtl:right-3" role="toolbar" aria-label="Model tools" aria-orientation="vertical">
-        {/* px keeps the active pill clear of the rail's own edges */}
-        <div className="atlas-card flex w-[46px] flex-col items-center gap-0.5 !rounded-2xl px-1.5 py-2 sm:w-[58px] md:w-[68px] md:px-2 md:py-2.5">
+      {/* ── tool rail ──
+           Docked along the bottom on a phone (thumb reach, canvas stays
+           clear) and along the left from `sm` up; see `.tool-rail`. */}
+      <div
+        className="tool-rail atlas-card !rounded-2xl"
+        role="toolbar"
+        aria-label="Model tools"
+      >
           <button className={`tool-btn ${tool === "rotate" ? "is-on" : ""}`} onClick={() => setTool("rotate")} aria-pressed={tool === "rotate"}>
             <RotateIcon />
             <span>{t.viewer.rotate}</span>
@@ -300,13 +303,16 @@ export const Viewer = memo(function Viewer({
               <span>{t.viewer.layers}</span>
             </button>
             {layersOpen && (
-              <div className="atlas-card absolute left-[70px] top-0 z-40 w-[168px] !rounded-xl p-1.5 rtl:right-[70px] rtl:left-auto" role="menu">
+              <div
+                className="atlas-card absolute bottom-full left-1/2 z-40 mb-2 w-[176px] -translate-x-1/2 !rounded-xl p-1.5 sm:bottom-auto sm:left-[calc(100%+8px)] sm:top-0 sm:mb-0 sm:translate-x-0 sm:rtl:left-auto sm:rtl:right-[calc(100%+8px)]"
+                role="menu"
+              >
                 {LAYER_ITEMS.map((it) => (
                   <button
                     key={it.key}
                     role="menuitemcheckbox"
                     aria-checked={layers[it.key]}
-                    className="flex w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[0.8rem] text-ink-soft transition-colors hover:bg-paper-deep rtl:text-right"
+                    className="flex min-h-[44px] w-full items-center gap-2 rounded-lg px-2 py-2 text-left text-[0.8rem] text-ink-soft transition-colors hover:bg-paper-deep rtl:text-right"
                     onClick={() => toggleLayer(it.key)}
                   >
                     <it.icon className="h-4 w-4 text-slateblue" />
@@ -325,18 +331,17 @@ export const Viewer = memo(function Viewer({
             <TimelineIcon />
             <span>{t.viewer.timeline}</span>
           </button>
-          <div className="my-1 h-px w-9 bg-line-warm" />
+          <div className="rail-divider" aria-hidden />
           <button className="tool-btn" onClick={resetView}>
             <ResetIcon />
             <span>{t.viewer.reset}</span>
           </button>
-        </div>
       </div>
 
       {/* ── active hotspot detail card ── */}
       {activeHs && (
         <div
-          className="atlas-card absolute bottom-4 left-1/2 z-30 w-[min(430px,calc(100%-140px))] -translate-x-1/2 !rounded-2xl p-4"
+          className="atlas-card atlas-scroll absolute bottom-[68px] left-1/2 z-30 max-h-[60%] w-[calc(100%-20px)] -translate-x-1/2 overflow-y-auto overscroll-contain !rounded-2xl p-4 sm:bottom-4 sm:max-h-[calc(100%-2rem)] sm:w-[min(430px,calc(100%-140px))]"
           role="dialog"
           aria-label={activeHs.title}
         >
@@ -345,8 +350,8 @@ export const Viewer = memo(function Viewer({
               <div className="kicker !text-[0.62rem] !text-terracotta">{activeHs.category.replace("-", " ")}</div>
               <h3 className="font-display mt-0.5 text-[1.25rem] font-bold leading-tight text-ink">{activeHs.title}</h3>
             </div>
-            <button className="rounded-md p-1 text-ink-muted transition-colors hover:bg-paper-deep hover:text-ink" onClick={() => setActiveId(null)} aria-label="Close detail">
-              <CloseIcon className="h-4.5 w-4.5 h-[18px] w-[18px]" />
+            <button className="touch-target -m-1 flex-none rounded-md p-1 text-ink-muted transition-colors hover:bg-paper-deep hover:text-ink" onClick={() => setActiveId(null)} aria-label="Close detail">
+              <CloseIcon className="h-[18px] w-[18px]" />
             </button>
           </div>
           <p className="font-display mt-2 text-[0.98rem] italic leading-snug text-ink-muted">{activeHs.short}</p>
@@ -356,7 +361,7 @@ export const Viewer = memo(function Viewer({
 
       {/* ── tip card ── */}
       {tipVisible && !activeHs && (
-        <div className="absolute bottom-4 right-4 z-30 hidden w-[210px] rounded-2xl border border-line-strong bg-[#efe4cf] p-3.5 shadow-card md:block rtl:left-4 rtl:right-auto">
+        <div className="viewer-tip absolute bottom-4 right-4 z-30 w-[210px] rounded-2xl border border-line-strong bg-[#efe4cf] p-3.5 shadow-card rtl:left-4 rtl:right-auto">
           <div className="flex items-center justify-between">
             <span className="font-display flex items-center gap-1.5 text-[0.95rem] font-bold text-ink">
               <BulbIcon className="h-4 w-4 text-gold" />
