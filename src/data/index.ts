@@ -5,6 +5,10 @@ import { hijazi } from "./styles/hijazi";
 import { asiri } from "./styles/asiri";
 import { eastern } from "./styles/eastern";
 
+import type { ArchCharacter } from "@/types/character";
+import { CHARACTERS, characterById, t } from "@/data/characters";
+import { ELEMENTS } from "@/data/corpus/elements";
+
 import type { Language } from "@/types/i18n";
 import { asset } from "@/lib/assets";
 
@@ -15,8 +19,13 @@ import { asset } from "@/lib/assets";
 const rebase = (e: Empire): Empire => ({
   ...e,
   modelPath: asset(e.modelPath),
+  ultraHero: e.ultraHero ? asset(e.ultraHero) : undefined,
   interior: { ...e.interior, image: asset(e.interior.image) },
-  floorPlan: { ...e.floorPlan, image: asset(e.floorPlan.image) },
+  floorPlan: {
+    ...e.floorPlan,
+    image: asset(e.floorPlan.image),
+    plan: e.floorPlan.plan ? asset(e.floorPlan.plan) : undefined,
+  },
   artifacts: { ...e.artifacts, image: asset(e.artifacts.image) },
   dailyLife: { ...e.dailyLife, image: asset(e.dailyLife.image) },
   geography: { ...e.geography, image: asset(e.geography.image) },
@@ -27,6 +36,17 @@ const rebase = (e: Empire): Empire => ({
 export const EMPIRES: Empire[] = [najdi, salmani, hijazi, asiri, eastern].map(rebase);
 
 export const empireById = (id: string): Empire => EMPIRES.find((e) => e.id === id) ?? EMPIRES[0];
+
+/** The architectural character this exhibit interprets, or null if it is not
+ *  linked yet. Kept as a lookup rather than an embedded object so the exhibit
+ *  data stays a flat, serialisable record. */
+export const characterFor = (e: Empire): ArchCharacter | null =>
+  e.characterId ? characterById(e.characterId) ?? null : null;
+
+/** Every exhibit built for a given character. Usually one, sometimes none —
+ *  most of the 57 character/typology cells will never have a villa. */
+export const exhibitsForCharacter = (characterId: string): Empire[] =>
+  EMPIRES.filter((e) => e.characterId === characterId);
 
 export function getLocalizedEmpire(empire: Empire, lang: Language): Empire {
   if (lang === "ar" && empire.ar) {
@@ -141,15 +161,82 @@ export const empireImages = (e: Empire) => ({
 
 /** Global search index built from the dataset */
 export interface SearchEntry {
-  kind: "empire" | "dwelling" | "feature" | "room" | "artifact" | "material";
+  kind: "empire" | "dwelling" | "feature" | "room" | "artifact" | "material" | "character" | "element";
   title: string;
   subtitle: string;
+  /** Empty for corpus entries that have no exhibit behind them. */
   empireId: string;
   hotspotId?: string;
+  /** Set on "character" and "element" entries, so a result can route to the
+   *  corpus pages rather than only to a villa. */
+  characterId?: string;
+  elementId?: string;
 }
 
 export function buildSearchIndex(lang: Language = "en"): SearchEntry[] {
   const out: SearchEntry[] = [];
+
+  // The reference layer is emitted FIRST, deliberately.
+  //
+  // SearchOverlay caps results at 14 (modals.tsx). A query like "salmani" or
+  // "najdi" matches a dozen rooms, motifs and keywords belonging to one villa,
+  // which was enough to push the character entry off the end of the list. That
+  // meant the entry carrying the registry standing — including the "not on the
+  // official map" label that keeps Salmani honest — was the first thing
+  // truncated. Ordering the corpus ahead of the exhibits makes the
+  // authoritative answer the visible one, and matches the product direction:
+  // the character is the subject, the villa is one interpretation of it.
+  // Corpus entries — the reference layer, searchable alongside the exhibits.
+  //
+  // Two constraints shape what is emitted here:
+  //
+  // 1. Searchable text must include the transliteration. An element's display
+  //    name is "Rawashin" but people type "roshan", and the filter in
+  //    SearchOverlay is a plain substring match over title + subtitle, so the
+  //    translit has to appear in one of them or the element is unfindable by the
+  //    name it is usually known by.
+  //
+  // 2. Every entry carries the id of the page that owns it. Corpus entries set
+  //    characterId or elementId and route to the reference pages; `empireId` is
+  //    only a convenience for the villa, and is empty for the many characters
+  //    that have none. Both pick handlers check the corpus ids first, because
+  //    `empireById` falls back to EMPIRES[0] and an unrouted corpus result
+  //    would otherwise land the visitor silently on the Najdi villa.
+  for (const c of CHARACTERS) {
+    const exhibit = exhibitsForCharacter(c.id)[0];
+    const standing =
+      c.registry === "official-map"
+        ? lang === "ar"
+          ? "طابع رسمي · خريطة طابع العمارة السعودية"
+          : "Official character · Saudi Architecture Characters Map"
+        : lang === "ar"
+          ? "طابع موثّق · خارج الخريطة الرسمية"
+          : "Documented character · not on the official map";
+    out.push({
+      kind: "character",
+      title: t(c.name, lang),
+      subtitle: t(c.region, lang) + " — " + standing,
+      empireId: exhibit?.id ?? "",
+      characterId: c.id,
+    });
+  }
+
+  for (const el of ELEMENTS) {
+    const exhibit = EMPIRES.find((e) =>
+      e.characterId ? el.attestedIn.some((a) => a.characterId === e.characterId) : false,
+    );
+    const hotspot = exhibit?.hotspots.find((h) => h.elementId === el.id);
+    out.push({
+      kind: "element",
+      title: t(el.name, lang),
+      // translit first so the element is findable by the name people type
+      subtitle: el.term.translit + " · " + el.term.ar + " · " + t(el.gloss, lang),
+      empireId: exhibit?.id ?? "",
+      hotspotId: hotspot?.id,
+      elementId: el.id,
+    });
+  }
+
   for (const raw of EMPIRES) {
     const e = getLocalizedEmpire(raw, lang);
     const dwellingSub = lang === "ar" ? `فيلا الطراز ${e.name}` : `${e.name} style villa`;
@@ -167,5 +254,6 @@ export function buildSearchIndex(lang: Language = "en"): SearchEntry[] {
     for (const k of e.keywords)
       out.push({ kind: "material", title: k, subtitle: relatedSub, empireId: e.id });
   }
+
   return out;
 }

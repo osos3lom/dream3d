@@ -1,41 +1,31 @@
 import { lazy, Suspense } from "react";
 import { BrowserRouter, Navigate, Route, Routes, useParams } from "react-router";
 import type { Language } from "@/types/i18n";
+import { isLanguage, preferredLanguage } from "@/hooks/use-locale-chrome";
+import { EMPIRES } from "@/data";
 
 const EmpireAtlasApp = lazy(() => import("@/components/EmpireAtlasApp"));
+
+/** The reference routes are their own chunk. They carry no three.js, so a
+ *  visitor arriving on a character page never downloads the viewer. */
+const CharactersIndexRoute = lazy(() => import("@/routes/CharactersIndexRoute"));
+const CharacterRoute = lazy(() => import("@/routes/CharacterRoute"));
+const ElementRoute = lazy(() => import("@/routes/ElementRoute"));
+const NotFoundRoute = lazy(() => import("@/routes/NotFoundRoute"));
 
 /** Everything lives under the repository subpath on GitHub Pages, so the
  *  router's basename comes from Vite's `base` rather than being hard-coded. */
 const BASENAME = import.meta.env.BASE_URL.replace(/\/$/, "");
 
-const LANGUAGES: Language[] = ["en", "ar"];
-
-const isLanguage = (value: string | undefined): value is Language =>
-  !!value && (LANGUAGES as string[]).includes(value);
-
-/** The first visit has no locale in the path. Honour the last choice the
- *  visitor made, then the browser's own preference, before falling back to
- *  English — the same resolution order the Next.js redirect implied. */
-function preferredLanguage(): Language {
-  try {
-    const stored = localStorage.getItem("atlas-lang");
-    if (isLanguage(stored ?? undefined)) return stored as Language;
-  } catch {
-    /* Safari private mode throws on access; the default is fine */
-  }
-  if (typeof navigator !== "undefined" && navigator.language?.toLowerCase().startsWith("ar")) {
-    return "ar";
-  }
-  return "en";
-}
-
-function LocaleRoute() {
+/** Guards the locale segment for every route beneath it. An unknown locale
+ *  redirects once, rather than each child having to re-check. */
+function LocaleGate({ render }: { render: (lang: Language) => React.ReactNode }) {
   const { lang } = useParams<{ lang: string }>();
   if (!isLanguage(lang)) return <Navigate to={`/${preferredLanguage()}`} replace />;
-  return <EmpireAtlasApp routeLang={lang} />;
+  return <>{render(lang)}</>;
 }
 
-/** Shown only for the moment the viewer chunk is in flight; painted in the
+/** Shown only for the moment a route chunk is in flight; painted in the
  *  page's own parchment so it never flashes white on a phone. */
 function RouteFallback() {
   return <div className="min-h-dvh bg-paper" aria-busy="true" />;
@@ -47,10 +37,42 @@ export function App() {
       <Suspense fallback={<RouteFallback />}>
         <Routes>
           <Route path="/" element={<Navigate to={`/${preferredLanguage()}`} replace />} />
-          <Route path="/:lang" element={<LocaleRoute />} />
-          <Route path="*" element={<Navigate to={`/${preferredLanguage()}`} replace />} />
+
+          {/* The exhibit. `/villa/:exhibitId` makes a specific villa linkable;
+              the bare locale opens the default one, as it always has. */}
+          <Route path="/:lang" element={<LocaleGate render={(l) => <EmpireAtlasApp routeLang={l} />} />} />
+          <Route
+            path="/:lang/villa/:exhibitId"
+            element={<LocaleGate render={(l) => <VillaRoute lang={l} />} />}
+          />
+
+          {/* The reference layer. */}
+          <Route
+            path="/:lang/characters"
+            element={<LocaleGate render={() => <CharactersIndexRoute />} />}
+          />
+          <Route
+            path="/:lang/characters/:characterId"
+            element={<LocaleGate render={() => <CharacterRoute />} />}
+          />
+          <Route
+            path="/:lang/elements/:elementId"
+            element={<LocaleGate render={() => <ElementRoute />} />}
+          />
+
+          {/* A genuine 404 rather than a silent redirect to the home villa. */}
+          <Route path="*" element={<NotFoundRoute />} />
         </Routes>
       </Suspense>
     </BrowserRouter>
   );
+}
+
+/** An unknown villa id is a 404, not a silent fall-back to the default villa.
+ *  `empireById` returns EMPIRES[0] for anything it does not recognise, which is
+ *  the right behaviour inside the app and the wrong behaviour for a URL. */
+function VillaRoute({ lang }: { lang: Language }) {
+  const { exhibitId } = useParams<{ exhibitId: string }>();
+  if (!exhibitId || !EMPIRES.some((e) => e.id === exhibitId)) return <NotFoundRoute />;
+  return <EmpireAtlasApp routeLang={lang} initialEmpireId={exhibitId} />;
 }

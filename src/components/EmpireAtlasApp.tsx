@@ -11,6 +11,11 @@ import { BottomCards } from "@/components/BottomCards";
 import { LessonModal, QuizModal, ArtifactsModal, TimelineModal, SectionModal, SearchOverlay } from "@/components/modals";
 import { CloseIcon } from "@/components/icons";
 import { useTranslation } from "@/i18n/translations";
+import { withLanguage } from "@/hooks/use-locale-chrome";
+
+/** BrowserRouter strips the basename from its own paths, but
+ *  `window.location.pathname` still carries it. */
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 
 /** three.js is by far the heaviest dependency; keeping the viewer in its own
@@ -19,12 +24,27 @@ const Viewer = lazy(() => import("@/components/Viewer").then((mod) => ({ default
 
 type ModalId = "lesson" | "quiz" | "artifacts" | "timeline" | "interior" | "floorPlan" | "dailyLife" | "geography" | null;
 
-export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
+export default function EmpireAtlasApp({
+  routeLang,
+  /** Which villa to open with. Set by `/:lang/villa/:exhibitId` so a specific
+   *  villa is linkable; the bare locale route leaves it undefined and gets the
+   *  default. Only the initial value is taken from the URL — selecting another
+   *  villa from the rail does not push history, which keeps the back button
+   *  meaning "the page I came from" rather than "the previous villa". */
+  initialEmpireId,
+}: {
+  routeLang: Language;
+  initialEmpireId?: string;
+}) {
   const navigate = useNavigate();
   const [lang, setLang] = useState<Language>(routeLang);
   const t = useTranslation(lang);
-  const [rawViewerEmpire, setRawViewerEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
-  const [rawPanelEmpire, setRawPanelEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
+  const [rawViewerEmpire, setRawViewerEmpire] = useState<Empire>(() =>
+    empireById(initialEmpireId ?? DEFAULT_EMPIRE_ID),
+  );
+  const [rawPanelEmpire, setRawPanelEmpire] = useState<Empire>(() =>
+    empireById(initialEmpireId ?? DEFAULT_EMPIRE_ID),
+  );
   
   const viewerEmpire = getLocalizedEmpire(rawViewerEmpire, lang);
   const panelEmpire = getLocalizedEmpire(rawPanelEmpire, lang);
@@ -86,7 +106,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
     try {
       localStorage.setItem("atlas-lang", next);
     } catch {}
-    navigate(`/${next}`);
+    navigate(withLanguage(window.location.pathname.replace(BASE_PATH, "") || "/", next));
   }, [lang, navigate]);
 
   useEffect(() => {
@@ -150,19 +170,35 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
     (nav: string) => {
       setActiveNav(nav);
       if (nav === "lessons") setModal("lesson");
-      else if (nav === "empires" || nav === "library") setSearchOpen(true);
+      // "Library" now opens the reference layer rather than the search overlay.
+      // The corpus covers all nineteen characters, most of which have no villa,
+      // so it needs a way in that does not require knowing what to type.
+      else if (nav === "library") navigate(`/${lang}/characters`);
+      else if (nav === "empires") setSearchOpen(true);
       else if (nav === "notes") setModal("timeline");
     },
-    [],
+    [navigate, lang],
   );
 
   const onSearchPick = useCallback(
-    (empireId: string, hotspotId?: string) => {
+    (empireId: string, hotspotId?: string, characterId?: string, elementId?: string) => {
       setSearchOpen(false);
+      // Corpus results own their own pages. Checked first because `empireById`
+      // falls back to EMPIRES[0], so routing a character by empireId would
+      // quietly swap the villa instead of opening the reference page.
+      if (characterId) {
+        navigate(`/${lang}/characters/${characterId}`);
+        return;
+      }
+      if (elementId) {
+        navigate(`/${lang}/elements/${elementId}`);
+        return;
+      }
+      if (!empireId) return;
       if (empireId !== viewerEmpire.id) selectEmpire(empireId);
       if (hotspotId) window.setTimeout(() => setFocusHotspot(hotspotId), empireId !== viewerEmpire.id ? 1600 : 50);
     },
-    [selectEmpire, viewerEmpire.id],
+    [selectEmpire, viewerEmpire.id, navigate, lang],
   );
 
   const localizedEmpires = EMPIRES.map((e) => getLocalizedEmpire(e, lang));

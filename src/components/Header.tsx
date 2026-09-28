@@ -48,7 +48,7 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
       </button>
 
       {/* Logo */}
-      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 xl:flex-none">
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 xl:flex-initial">
         <TempleIcon className="h-7 w-7 flex-none text-terracotta sm:h-8 sm:w-8" aria-hidden />
         <div className="min-w-0 leading-none">
           <div className="font-display truncate text-[1.05rem] font-bold tracking-[0.01em] text-ink sm:text-[1.45rem]">{t.siteTitle}</div>
@@ -57,7 +57,7 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
       </div>
 
       {/* Nav */}
-      <nav className="mx-4 hidden items-center gap-1 xl:flex" aria-label="Primary">
+      <nav className="mx-4 hidden flex-none items-center gap-1 xl:flex" aria-label="Primary">
         {NAV.map((n) => (
           <button
             key={n.id}

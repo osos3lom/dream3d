@@ -1,4 +1,4 @@
-import { memo, useEffect, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useScrollLock } from "@/hooks/use-scroll-lock";
 import type { Empire } from "@/types/empire";
 import type { Language } from "@/types/i18n";
@@ -23,8 +23,22 @@ export const LessonModal = memo(function LessonModal({
   const t = useTranslation(lang);
   return (
     <ModalShell title={empire.lesson.title} kicker={`${t.modals.lesson.kicker} · ${empire.name}`} onClose={onClose} wide>
+      {empire.ultraHero ? (
+        <figure className="mb-4 overflow-hidden rounded-xl border border-line-warm bg-paper-deep">
+          <img
+            src={empire.ultraHero}
+            alt={`${empire.dwelling} seen from the street`}
+            className="block aspect-[16/9] w-full object-cover"
+            width={1376}
+            height={768}
+            loading="lazy"
+          />
+        </figure>
+      ) : null}
       <div className="flex gap-5">
-        <img src={empireImages(empire).hero} alt="" className="hidden h-28 w-40 flex-none rounded-xl border border-line-warm bg-paper-deep object-contain sm:block" />
+        {!empire.ultraHero && (
+          <img src={empireImages(empire).hero} alt="" className="hidden h-28 w-40 flex-none rounded-xl border border-line-warm bg-paper-deep object-contain sm:block" />
+        )}
         <p className="font-display text-[1.08rem] italic leading-snug text-ink-soft">{empire.lesson.intro}</p>
       </div>
       <div className="mt-5 space-y-4">
@@ -193,16 +207,120 @@ export const SectionModal = memo(function SectionModal({
   empire,
   section,
   onClose,
-  lang: _lang = "en",
+  lang = "en",
 }: ModalBaseProps & {
   section: "interior" | "floorPlan" | "dailyLife" | "geography";
 }) {
+  const t = useTranslation(lang);
   const data = empire[section];
   const rooms = section === "floorPlan" ? empire.floorPlan.rooms : null;
+  const [planMode, setPlanMode] = useState<"cad" | "3d">("cad");
+  /* The drawing is 1200px wide. On a phone it opens fitted, so the whole plan
+     is visible at once, and zooms to 1200px when a room label needs reading.
+     From `sm` up there is width enough to show it fitted and legible, so the
+     control never appears. */
+  const [planFitted, setPlanFitted] = useState(true);
+  const planBoxRef = useRef<HTMLDivElement>(null);
+
+  /* Entering zoom otherwise parks the view on the drawing's empty left margin;
+     start on the building instead. */
+  useEffect(() => {
+    const box = planBoxRef.current;
+    if (!box || planFitted) return;
+    box.scrollLeft = (box.scrollWidth - box.clientWidth) / 2;
+    box.scrollTop = (box.scrollHeight - box.clientHeight) / 2;
+  }, [planFitted]);
+
+  // The measured plan comes from the dataset (already re-based onto BASE_URL);
+  // a style without one simply falls back to the rendered slice.
+  const cadPlan = section === "floorPlan" ? empire.floorPlan.plan : undefined;
+  const showingCadPlan = !!cadPlan && planMode === "cad";
+  const imageSrc = showingCadPlan ? cadPlan : data.image;
+
   return (
     <ModalShell title={data.title} kicker={`${data.kicker} · ${empire.dwelling}`} onClose={onClose} wide>
-      <div className="overflow-hidden rounded-xl border border-line-warm bg-paper-deep">
-        <img src={data.image} alt={data.title} className="w-full object-contain" />
+      {section === "floorPlan" && (
+        <div className="mb-3 flex flex-wrap items-center justify-between gap-3 border-b border-line-warm pb-3">
+          <div className="text-xs font-semibold uppercase tracking-wider text-ink-muted">
+            {lang === "ar" ? "عرض المخطط" : "Floor Plan View"}
+          </div>
+          <div className="inline-flex rounded-lg border border-line-warm bg-paper-deep p-0.5">
+            <button
+              type="button"
+              onClick={() => setPlanMode("cad")}
+              className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                planMode === "cad"
+                  ? "bg-surface text-ink shadow-sm font-bold"
+                  : "text-ink-soft hover:text-ink"
+              }`}
+            >
+              {lang === "ar" ? "مخطط معماري 2D CAD" : "2D Architectural Plan"}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlanMode("3d")}
+              className={`cursor-pointer rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+                planMode === "3d"
+                  ? "bg-surface text-ink shadow-sm font-bold"
+                  : "text-ink-soft hover:text-ink"
+              }`}
+            >
+              {lang === "ar" ? "مقطع ثلاثي الأبعاد 3D" : "3D Model Slice"}
+            </button>
+          </div>
+        </div>
+      )}
+      {showingCadPlan && (
+        <div className="mb-2 flex items-center justify-between gap-3 sm:hidden">
+          <p className="min-w-0 flex-1 text-[0.72rem] italic leading-snug text-ink-muted">
+            {planFitted ? t.modals.section.planHintFit : t.modals.section.planHintZoom}
+          </p>
+          <div className="inline-flex flex-none rounded-lg border border-line-warm bg-paper-deep p-0.5">
+            <button
+              type="button"
+              onClick={() => setPlanFitted(true)}
+              aria-pressed={planFitted}
+              className={`rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+                planFitted ? "bg-surface font-bold text-ink shadow-sm" : "text-ink-soft"
+              }`}
+            >
+              {t.modals.section.planFit}
+            </button>
+            <button
+              type="button"
+              onClick={() => setPlanFitted(false)}
+              aria-pressed={!planFitted}
+              className={`rounded-md px-3 py-2 text-xs font-medium transition-colors ${
+                !planFitted ? "bg-surface font-bold text-ink shadow-sm" : "text-ink-soft"
+              }`}
+            >
+              {t.modals.section.planZoom}
+            </button>
+          </div>
+        </div>
+      )}
+      <div
+        ref={planBoxRef}
+        className={`rounded-xl border border-line-warm bg-paper-deep ${
+          showingCadPlan && !planFitted
+            ? "atlas-scroll max-h-[58dvh] overflow-auto overscroll-contain sm:max-h-none sm:overflow-hidden"
+            : "overflow-hidden"
+        }`}
+      >
+        <img
+          src={imageSrc}
+          alt={data.title}
+          className={
+            showingCadPlan
+              ? planFitted
+                ? /* whole drawing, fitted to the modal */
+                  "block h-auto w-full object-contain sm:max-h-[68dvh]"
+                : /* natural width, panned in both axes */
+                  "block h-auto w-[1200px] max-w-none object-contain sm:w-full sm:max-h-[68dvh]"
+              : "max-h-[68dvh] w-full object-contain"
+          }
+          loading="lazy"
+        />
       </div>
       {section === "geography" && (
         <div className="kicker mt-3 !text-terracotta">{empire.geography.regionLabel}</div>
@@ -229,7 +347,10 @@ export const SearchOverlay = memo(function SearchOverlay({
   lang = "en",
 }: {
   onClose: () => void;
-  onPick: (empireId: string, hotspotId?: string) => void;
+  /** Corpus results carry a characterId or elementId so the host can route to
+   *  the reference pages; exhibit results carry only the villa and hotspot.
+   *  The exhibit passes a two-argument handler and simply ignores the rest. */
+  onPick: (empireId: string, hotspotId?: string, characterId?: string, elementId?: string) => void;
   lang?: Language;
 }) {
   const t = useTranslation(lang);
@@ -273,11 +394,11 @@ export const SearchOverlay = memo(function SearchOverlay({
           {results.length === 0 && <p className="font-display px-3 py-6 text-center italic text-ink-muted">{t.search.noResults}</p>}
           {results.map((r, i) => (
             <button
-              key={`${r.empireId}-${r.title}-${i}`}
+              key={`${r.kind}-${r.empireId}-${r.characterId ?? r.elementId ?? ""}-${i}`}
               role="option"
               aria-selected={false}
               className="flex min-h-[52px] w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-paper-deep rtl:text-right"
-              onClick={() => onPick(r.empireId, r.hotspotId)}
+              onClick={() => onPick(r.empireId, r.hotspotId, r.characterId, r.elementId)}
             >
               <span className="flex-none rounded-md border border-line-warm bg-surface px-2 py-0.5 text-[0.62rem] font-semibold uppercase tracking-wider text-terracotta">
                 {t.search.kinds[r.kind] || r.kind}

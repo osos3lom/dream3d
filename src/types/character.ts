@@ -31,30 +31,39 @@ export const TYPOLOGIES: readonly Typology[] = [
   "contemporary",
 ] as const;
 
-/** The nineteen official characters, in the order the DASC portal presents
- *  them. `src/data/characters/index.ts` asserts at module load that exactly
- *  these nineteen ids carry `registry: "official-map"`, each with a unique
+/** The nineteen official characters.
+ *
+ *  The ORDER here, and therefore every `officialIndex`, follows the enumeration
+ *  of the Characters Map as published in secondary reference (Saudipedia's entry
+ *  on the map). It has not been confirmed against the DASC portal's own
+ *  ordering, and the index is presentational rather than load-bearing — nothing
+ *  in the application depends on a character's position, only on whether it is
+ *  on the map at all. Confirm the ordering against the portal before any
+ *  `officialIndex` is shown to a user as an official number.
+ *
+ *  `src/data/characters/index.ts` asserts at module load that exactly these
+ *  nineteen ids carry `registry: "official-map"`, each with a unique
  *  `officialIndex` in 1..19. No code path can introduce a twentieth. */
 export const OFFICIAL_CHARACTER_IDS = [
-  "najdi",
-  "northern-najdi",
-  "eastern-najdi",
-  "tabuk-coast",
-  "al-madinah",
-  "al-madinah-rural",
-  "taif",
-  "coastal-hijazi",
-  "aseer-slopes",
-  "sarawat-mountains",
-  "tihamah-coast",
-  "tihamah-foothills",
-  "abha-highlands",
-  "bisha-desert",
-  "farasan-islands",
-  "najran",
-  "al-qatif",
-  "al-ahsa-oasis",
-  "eastern-coast",
+  "najdi",              // 1
+  "tabuk-coast",        // 2
+  "northern-najdi",     // 3
+  "al-madinah",         // 4
+  "al-madinah-rural",   // 5
+  "taif",               // 6
+  "coastal-hijazi",     // 7
+  "aseer-slopes",       // 8
+  "sarawat-mountains",  // 9
+  "tihamah-coast",      // 10
+  "tihamah-foothills",  // 11
+  "abha-highlands",     // 12
+  "bisha-desert",       // 13
+  "farasan-islands",    // 14
+  "najran",             // 15
+  "al-qatif",           // 16
+  "al-ahsa-oasis",      // 17
+  "eastern-najdi",      // 18
+  "eastern-coast",      // 19
 ] as const;
 
 export type OfficialCharacterId = (typeof OFFICIAL_CHARACTER_IDS)[number];

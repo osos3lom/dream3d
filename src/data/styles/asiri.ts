@@ -2,12 +2,18 @@ import type { Empire } from "@/types/empire";
 
 export const asiri: Empire = {
   id: "asiri",
+  // Links this exhibit to the architectural character it interprets.
+  // All five original villas are contemporary interpretations, not
+  // reconstructions — the typology says so explicitly.
+  characterId: "aseer-slopes",
+  typology: "contemporary",
   name: "Asiri",
   dwelling: "Modern Asiri Tower Villa",
   subtitle: "Painted stone towers of the southern highlands",
   description:
     "A villa of stepped stone towers on a terraced plinth, as in the mountain villages of Asir: slate rain courses ribbing every wall, white-framed windows crowned with qamariya lights, and bands of Al-Qatt Al-Asiri geometry painted in red, yellow, green and blue.",
   modelPath: "/models/asiri.glb",
+  ultraHero: "/img/asiri/ultra-hero.jpg",
   tint: "#a66a4c",
   camera: { azimuth: -32, elevation: 20, dist: 1.0, targetY: 0.36 },
   facts: [
@@ -20,6 +26,7 @@ export const asiri: Empire = {
   hotspots: [
     {
       id: "slate-ribs",
+      elementId: "slate-ribs",
       title: "Slate Rain Courses",
       short: "Projecting stone ribs every half metre",
       detail:
@@ -30,6 +37,24 @@ export const asiri: Empire = {
     },
     {
       id: "al-qatt",
+      // REVIEW — cultural accuracy, raised by the provenance pass.
+      // This hotspot describes Al-Qatt Al-Asiri crowning the tower parapets,
+      // i.e. on the EXTERIOR. The UNESCO 2017 inscription defines Al-Qatt
+      // Al-Asiri specifically as female traditional *interior* wall decoration,
+      // and the element record restricts itself to interior surfaces on that
+      // basis (src/data/corpus/elements.ts).
+      //
+      // Painted exterior decoration does exist in Asir — Rijal Almaa is the
+      // obvious case — but whether it is properly called "Al-Qatt Al-Asiri" is
+      // exactly the question a specialist should settle. Two possible
+      // resolutions, both fine, and both requiring a source:
+      //   (a) cite a source that documents exterior qatt, and widen the element;
+      //   (b) rename this hotspot to the exterior painted tradition and keep
+      //       al-qatt for interiors only.
+      // Deliberately left as-is rather than silently edited: this is the
+      // studio's authored content and the call is the reviewer's, not the
+      // tooling's. Tracked for the Phase 1 expert review.
+      elementId: "al-qatt",
       title: "Al-Qatt Al-Asiri Frieze",
       short: "Painted triangles in four colours",
       detail:
@@ -40,6 +65,7 @@ export const asiri: Empire = {
     },
     {
       id: "qamariya",
+      elementId: "qamariya",
       title: "Qamariya Lights",
       short: "Coloured fanlights over the windows",
       detail:
@@ -82,6 +108,7 @@ export const asiri: Empire = {
     cta: "View Floor Plan",
     text: "A plan section through the terrace level: two stone towers of tapering floors stand on a terraced plinth, with the glazed wing below toward the garden.",
     image: "/img/asiri/floor-plan.webp",
+    plan: "/img/plan_asiri.svg",
     rooms: [
       { name: "Garden Wing", note: "Glazed living pavilion" },
       { name: "Entry Stair", note: "Up to the terrace" },

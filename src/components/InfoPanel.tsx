@@ -63,13 +63,24 @@ export const InfoPanel = memo(function InfoPanel({ empire, flow = false, animati
               flow ? "sm:w-[44%] sm:flex-none" : ""
             }`}
           >
-            <img
-              src={empireImages(empire).hero}
-              alt={`Illustration of the ${empire.dwelling}`}
-              className="block h-auto w-full object-contain"
-              loading="lazy"
-              draggable={false}
-            />
+            {/* The photoreal render is ~850KB against the massing image's 41KB,
+                so it is served only where the screen is big enough to do it
+                justice. A phone never downloads it: the `media` query is
+                evaluated before the request is made. A style without an
+                `ultraHero` (or any browser without <picture>) falls through
+                to the flat render, which is the element's own `src`. */}
+            <picture>
+              {empire.ultraHero && (
+                <source media="(min-width: 768px)" srcSet={empire.ultraHero} />
+              )}
+              <img
+                src={empireImages(empire).hero}
+                alt={`Illustration of the ${empire.dwelling}`}
+                className="block h-auto w-full object-contain"
+                loading="lazy"
+                draggable={false}
+              />
+            </picture>
           </div>
 
           <div className={flow ? "min-w-0 sm:flex-1" : ""}>

@@ -7,7 +7,14 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "corpus:bundle": "esbuild scripts/studio/verify-corpus.mts --bundle --platform=node --format=esm --alias:@=./src --define:import.meta.env.BASE_URL=\\\"/\\\" --log-level=warning --outfile=node_modules/.cache/studio/verify-corpus.mjs",
+    "verify:corpus": "npm run corpus:bundle && node node_modules/.cache/studio/verify-corpus.mjs",
+    "verify:corpus:strict": "npm run corpus:bundle && node node_modules/.cache/studio/verify-corpus.mjs --strict",
+    "verify:corpus:negative": "node scripts/studio/verify-corpus-negative.mjs",
+    "spec:bundle": "esbuild scripts/studio/verify-spec.mts --bundle --platform=node --format=esm --alias:@=./src --define:import.meta.env.BASE_URL=\\\"/\\\" --log-level=warning --outfile=node_modules/.cache/studio/verify-spec.mjs",
+    "verify:spec": "npm run spec:bundle && node node_modules/.cache/studio/verify-spec.mjs",
+    "verify": "npm run verify:corpus && npm run verify:spec && npm run verify:corpus:negative"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",

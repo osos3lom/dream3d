@@ -1,0 +1,427 @@
+/* Reference layer — characters, elements and provenance.
+
+   Built on the same warm tokens as the exhibit (--paper, --ink, --terracotta,
+   --line) so the reference pages read as the same product rather than a
+   bolted-on section. The one new colour relationship is the provenance
+   contract: slate for documented, terracotta for interpretation, muted and
+   dashed for unverified. Those three must stay visually distinct, and each is
+   always accompanied by a word — an icon alone is not sufficient labelling for
+   a generated interpretation, because a screenshot has to carry the
+   distinction with it.
+
+   Layout uses logical properties throughout (inset-inline, padding-inline,
+   border-inline) so RTL needs almost no mirroring; the exceptions are marked
+   at the bottom. */
+
+/* Provenance badges ------------------------------------------------------ */
+.prov-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.18rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.prov-badge--documented {
+  color: var(--slate-icon);
+  border-color: #c3cedd;
+  background: #f2f6fb;
+}
+.prov-badge--interpretation {
+  color: var(--terracotta-deep);
+  border-color: #e2bfae;
+  background: #fdf3ee;
+}
+.prov-badge--unverified {
+  color: var(--ink-muted);
+  border-style: dashed;
+  background: transparent;
+}
+.prov-badge__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: currentColor;
+  opacity: 0.7;
+}
+
+.prov-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.prov-note {
+  margin-top: 0.4rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  border-inline-start: 2px dashed var(--line-strong);
+  padding-inline-start: 0.6rem;
+}
+
+.prov-sources {
+  margin: 0.35rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.prov-sources__item {
+  position: relative;
+  padding-inline-start: 0.85rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+.prov-sources__item::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.62em;
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--slate-icon);
+  opacity: 0.55;
+}
+.prov-sources__item a {
+  color: var(--slate-icon);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.prov-sources__item a:hover {
+  color: var(--ink);
+}
+.prov-sources__meta {
+  color: var(--ink-muted);
+}
+.prov-sources__item--missing {
+  color: var(--marker);
+  font-family: ui-monospace, monospace;
+}
+
+/* Registry standing ------------------------------------------------------ */
+.registry-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.16rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+.registry-pill--official {
+  color: #35603f;
+  background: #eef5ef;
+  border-color: #cde0d1;
+}
+.registry-pill--other {
+  color: var(--ink-muted);
+  background: var(--paper-deep);
+  border-color: var(--line);
+}
+.registry-pill__index {
+  font-variant-numeric: tabular-nums;
+}
+.registry-pill__sep {
+  opacity: 0.5;
+}
+.registry-pill__full {
+  font-weight: 500;
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+/* Character index -------------------------------------------------------- */
+.char-grid {
+  display: grid;
+  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+}
+.char-card {
+  display: flex;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+  transition:
+    border-color 0.18s ease,
+    transform 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.char-card:hover {
+  border-color: var(--line-strong);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px -12px rgba(59, 45, 33, 0.4);
+}
+/* A character with no reference material yet reads as an outline rather than a
+   filled card, so the gap is legible at a glance across the index. */
+.char-card--thin {
+  background: transparent;
+  border-style: dashed;
+}
+.char-card__swatch {
+  width: 6px;
+  flex: none;
+  border-radius: 3px;
+  background: var(--char-tint, var(--line-strong));
+}
+.char-card__body {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.char-card__name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--ink);
+}
+.char-card__region {
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+.char-card__tagline {
+  margin-bottom: 0.35rem;
+  font-size: 0.8rem;
+  line-height: 1.45;
+  color: var(--ink-soft);
+}
+.char-card--thin .char-card__tagline {
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.corpus-coverage {
+  margin-top: 0.9rem;
+  font-size: 0.78rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+.corpus-disclaimer {
+  max-width: 68ch;
+  margin-top: 2.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  color: var(--ink-muted);
+}
+.corpus-back {
+  font-size: 0.8rem;
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.corpus-back:hover {
+  color: var(--ink);
+}
+
+.corpus-thin {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border: 1px dashed var(--line-strong);
+  background: var(--paper-deep);
+}
+.corpus-thin strong {
+  display: block;
+  font-size: 0.82rem;
+  color: var(--ink);
+}
+.corpus-thin p {
+  margin: 0.35rem 0 0;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* Typologies ------------------------------------------------------------- */
+.typology-tabs {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  border-radius: 10px;
+  background: var(--paper-deep);
+  border: 1px solid var(--line);
+}
+.typology-tab {
+  padding: 0.35rem 0.8rem;
+  border-radius: 7px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--ink-muted);
+  text-transform: capitalize;
+  transition:
+    background 0.16s ease,
+    color 0.16s ease;
+}
+.typology-tab:hover {
+  color: var(--ink);
+}
+.typology-tab.is-active {
+  background: var(--surface);
+  color: var(--terracotta-deep);
+  box-shadow: 0 1px 2px rgba(59, 45, 33, 0.12);
+}
+.typology-panel {
+  margin-top: 1rem;
+  padding: 1.1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+
+/* Elements --------------------------------------------------------------- */
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.element-chip {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.4rem;
+  padding: 0.3rem 0.65rem;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: var(--paper-deep);
+  font-size: 0.8rem;
+  transition:
+    border-color 0.16s ease,
+    background 0.16s ease;
+}
+a.element-chip:hover {
+  border-color: var(--terracotta-soft);
+  background: var(--cream);
+}
+.element-chip--plain {
+  text-transform: capitalize;
+  color: var(--ink-soft);
+}
+.element-chip__name {
+  font-weight: 600;
+  color: var(--ink);
+}
+.element-chip__term {
+  font-size: 0.74rem;
+  color: var(--ink-muted);
+}
+
+.element-term {
+  display: flex;
+  gap: 0.6rem;
+  align-items: baseline;
+  margin-top: 0.3rem;
+}
+.element-term__ar {
+  font-size: 1.05rem;
+  color: var(--ink-soft);
+}
+.element-term__translit {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--ink-muted);
+}
+
+.param-table {
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.param-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.55rem 0.85rem;
+  font-size: 0.82rem;
+  background: var(--surface);
+}
+.param-row + .param-row {
+  border-top: 1px solid var(--line);
+}
+.param-row__label {
+  color: var(--ink);
+  font-weight: 600;
+}
+.param-row__range {
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+}
+.param-row__doc {
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.placement-grid {
+  display: grid;
+  gap: 0.5rem 1.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+.placement-grid__key {
+  display: block;
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-muted);
+}
+.placement-grid__val {
+  display: block;
+  font-size: 0.86rem;
+  color: var(--ink);
+}
+
+/* The constraint note carries the cultural reasoning — why an element may not
+   go somewhere. It is styled to be read, not skimmed past, because a refusal
+   the studio makes later should already be explicable from this page. */
+.placement-note {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border-inline-start: 3px solid var(--terracotta-soft);
+  background: #fdf3ee;
+}
+.placement-note strong {
+  display: block;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--terracotta-deep);
+}
+.placement-note p {
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: var(--ink-soft);
+}
+
+/* RTL --------------------------------------------------------------------
+   Logical properties cover nearly everything. The parameter table is the
+   exception: its columns are visually ordered rather than flowing, so the grid
+   is reversed explicitly. */
+html[dir="rtl"] .param-row {
+  grid-template-columns: auto auto 1fr;
+}
+html[dir="rtl"] .param-row__label {
+  order: 3;
+}
+html[dir="rtl"] .param-row__range {
+  order: 2;
+}
+html[dir="rtl"] .param-row__doc {
+  order: 1;
+}

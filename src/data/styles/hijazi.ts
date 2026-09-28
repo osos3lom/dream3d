@@ -2,12 +2,18 @@ import type { Empire } from "@/types/empire";
 
 export const hijazi: Empire = {
   id: "hijazi",
+  // Links this exhibit to the architectural character it interprets.
+  // All five original villas are contemporary interpretations, not
+  // reconstructions — the typology says so explicitly.
+  characterId: "coastal-hijazi",
+  typology: "contemporary",
   name: "Hijazi",
   dwelling: "Modern Hijazi Townhouse Villa",
   subtitle: "Coral stone and rawashin for the Red Sea coast",
   description:
     "A three-storey villa in the spirit of Al-Balad, Jeddah: coral-stone walls coursed with timber tie-beams, stacked wooden rawashin screening the upper floors, lattice ventilation high in every wall and a roof terrace behind a latticed parapet.",
   modelPath: "/models/hijazi.glb",
+  ultraHero: "/img/hijazi/ultra-hero.jpg",
   tint: "#b8905e",
   camera: { azimuth: -32, elevation: 20, dist: 1.0, targetY: 0.36 },
   facts: [
@@ -20,6 +26,7 @@ export const hijazi: Empire = {
   hotspots: [
     {
       id: "roshan",
+      elementId: "roshan",
       title: "Rawashin",
       short: "Projecting timber lattice bays",
       detail:
@@ -30,6 +37,7 @@ export const hijazi: Empire = {
     },
     {
       id: "coral-coursing",
+      elementId: "takalil",
       title: "Coral-Stone Coursing",
       short: "Pale walls banded by timber tie-beams",
       detail:
@@ -40,6 +48,7 @@ export const hijazi: Empire = {
     },
     {
       id: "ventilation-screens",
+      elementId: "ventilation-screen",
       title: "High Ventilation Screens",
       short: "Lattice openings near every ceiling",
       detail:
@@ -82,6 +91,7 @@ export const hijazi: Empire = {
     cta: "View Floor Plan",
     text: "A plan section at ground level: a compact, deep block with the entrance hall on axis, living rooms behind glazed bays and a garden to the rear.",
     image: "/img/hijazi/floor-plan.webp",
+    plan: "/img/plan_hijazi.svg",
     rooms: [
       { name: "Entrance Dehliz", note: "Carved door, lattice transom" },
       { name: "Men's Majlis", note: "Glazed bay to the street" },

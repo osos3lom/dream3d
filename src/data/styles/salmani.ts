@@ -2,6 +2,11 @@ import type { Empire } from "@/types/empire";
 
 export const salmani: Empire = {
   id: "salmani",
+  // Links this exhibit to the architectural character it interprets.
+  // All five original villas are contemporary interpretations, not
+  // reconstructions — the typology says so explicitly.
+  characterId: "salmani",
+  typology: "contemporary",
   name: "Salmani",
   dwelling: "Salmani Contemporary Villa",
   subtitle: "Riyadh's heritage-modern blend in clean geometry",
@@ -82,6 +87,7 @@ export const salmani: Empire = {
     cta: "View Floor Plan",
     text: "A plan section at ground level: a glazed living pavilion under the cantilever, the entry tower, and a two-storey rear block along the pool court.",
     image: "/img/salmani/floor-plan.webp",
+    plan: "/img/plan_salmani.svg",
     rooms: [
       { name: "Entry Portal", note: "Deep stone recess" },
       { name: "Glazed Living Pavilion", note: "Under the cantilever" },
