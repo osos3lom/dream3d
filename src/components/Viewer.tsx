@@ -261,7 +261,7 @@ export const Viewer = memo(function Viewer({
       {/* pins fixed to the dwelling */}
       <HotspotLayer
         engine={engineReady ? engineRef.current : null}
-        empire={empire}
+        framing={empire}
         containerRef={containerRef}
         activeId={activeId}
         hoverId={hoverId}

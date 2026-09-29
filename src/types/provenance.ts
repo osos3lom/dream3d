@@ -81,9 +81,17 @@ export type InterpretationAuthor = "studio-team" | "claude" | "visitor";
  *  without naming the documented elements it draws on. */
 export interface InterpretationProvenance {
   kind: "interpretation";
+  /** `citations` is a plain array rather than a non-empty tuple, unlike
+   *  `DocumentedProvenance`. The reason is where the guarantee lives: a
+   *  generated interpretation is produced by the design-spec schema, whose
+   *  `.min(1)` enforces non-emptiness at parse time, and zod infers that as
+   *  `Citation[]`. Demanding a tuple here would mean casting every validated
+   *  spec, which trades a real runtime check for a cosmetic compile-time one.
+   *  Hand-authored documented claims keep the tuple, because nothing validates
+   *  those at runtime. */
   derivedFrom: Array<{
     elementId: string;
-    citations: [Citation, ...Citation[]];
+    citations: Citation[];
   }>;
   author: InterpretationAuthor;
   /** Exact model id, e.g. "claude-opus-5". Required when author is "claude". */

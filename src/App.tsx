@@ -12,6 +12,9 @@ const CharactersIndexRoute = lazy(() => import("@/routes/CharactersIndexRoute"))
 const CharacterRoute = lazy(() => import("@/routes/CharacterRoute"));
 const ElementRoute = lazy(() => import("@/routes/ElementRoute"));
 const NotFoundRoute = lazy(() => import("@/routes/NotFoundRoute"));
+/** The studio carries three.js and the parametric kit, so it stays in its own
+ *  chunk — a visitor reading the reference pages never downloads it. */
+const StudioRoute = lazy(() => import("@/routes/StudioRoute"));
 
 /** Everything lives under the repository subpath on GitHub Pages, so the
  *  router's basename comes from Vite's `base` rather than being hard-coded. */
@@ -58,6 +61,12 @@ export function App() {
           <Route
             path="/:lang/elements/:elementId"
             element={<LocaleGate render={() => <ElementRoute />} />}
+          />
+
+          <Route path="/:lang/studio" element={<LocaleGate render={() => <StudioRoute />} />} />
+          <Route
+            path="/:lang/studio/c/:catalogId"
+            element={<LocaleGate render={() => <StudioRoute />} />}
           />
 
           {/* A genuine 404 rather than a silent redirect to the home villa. */}

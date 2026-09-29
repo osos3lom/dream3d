@@ -16,7 +16,11 @@ import { culturalLint, manufacturabilityLint, type LintCode } from "@/lib/studio
 // Resolved from the working directory, not import.meta.url: this file is
 // bundled into node_modules/.cache before it runs, so a URL-relative path would
 // look for the fixture next to the bundle. npm scripts run at the repo root.
-const fixturePath = resolve(process.cwd(), "scripts/studio/fixtures/najdi-contemporary.spec.json");
+//
+// The fixture lives in src/data/catalog because it is not only a test fixture —
+// it is the seed design the studio opens with. One copy, so a change to the
+// catalog is exercised by these checks automatically.
+const fixturePath = resolve(process.cwd(), "src/data/catalog/najdi-contemporary.spec.json");
 const raw: unknown = JSON.parse(readFileSync(fixturePath, "utf8"));
 
 let failures = 0;
@@ -228,6 +232,37 @@ if (thinParsed.success) {
 const baseM = manufacturabilityLint(spec);
 if (!baseM.ok) bad("the golden fixture is manufacturable", baseM.errors.map((e) => e.message).join("; "));
 else ok("the golden fixture is manufacturable");
+
+console.log("");
+console.log("  Geometry");
+try {
+  const { buildDesign } = await import("@/three/parametric/build");
+  const built = buildDesign(spec, "fixture");
+  if (built.triangles < 100) {
+    bad("the fixture builds geometry", "only " + built.triangles + " triangles — something is not being emitted");
+  } else {
+    ok("the fixture builds geometry", built.triangles + " triangles, " + built.group.children.length + " meshes");
+  }
+  // One mesh per material is a hard requirement: ViewerEngine.applyRim reads
+  // mesh.material as a single material and an array would lose the rim light.
+  const arrayMat = built.group.children.filter((c) => Array.isArray((c as { material?: unknown }).material));
+  if (arrayMat.length > 0) bad("one material per mesh", arrayMat.length + " mesh(es) carry a material array");
+  else ok("one material per mesh");
+
+  if (built.unbuilt.length > 0) {
+    bad("every placed element has a builder", "no TS builder for: " + built.unbuilt.join(", "));
+  } else {
+    ok("every placed element has a builder");
+  }
+
+  if (built.anchors.length !== spec.anchors.length) {
+    bad("anchors are carried through", built.anchors.length + " of " + spec.anchors.length);
+  } else {
+    ok("anchors are carried through", built.anchors.length + " anchors");
+  }
+} catch (e) {
+  bad("the fixture builds geometry", String((e as Error).message ?? e));
+}
 
 console.log("");
 if (failures > 0) {

@@ -14,6 +14,7 @@ export const najdi: Empire = {
     "A contemporary courtyard villa that carries the language of Najd's mud-brick towns — triangular furjat, stepped shurfat and a projecting tarma — into deep-set glazing and thermal-mass walls built for the Riyadh sun.",
   modelPath: "/models/najdi.glb",
   ultraHero: "/img/najdi/ultra-hero.jpg",
+  hero: "/img/najdi/hero.jpg",
   tint: "#c49a6c",
   camera: { azimuth: -34, elevation: 26, dist: 1.0, targetY: 0.28 },
   facts: [
@@ -85,7 +86,7 @@ export const najdi: Empire = {
     title: "Inside the Hosh",
     cta: "Step into the Court",
     text: "From the court the villa turns transparent: full-height glazing to the living wing, a slatted pergola, palms and a shallow reflecting pool — all enclosed by the same thick earthen walls that shut out the street.",
-    image: "/img/najdi/interior.webp",
+    image: "/img/najdi/interior.jpg",
   },
   floorPlan: {
     kicker: "Floor Plan",
@@ -109,7 +110,7 @@ export const najdi: Empire = {
     title: "The Najdi Vocabulary",
     cta: "Explore Motifs",
     text: "Deep relief and simple geometry: the Najdi motifs are made of shadow as much as of material, so they read clearly under a hard desert sun.",
-    image: "/img/najdi/artifacts.webp",
+    image: "/img/najdi/artifacts.jpg",
     items: [
       { name: "Furjat", purpose: "Venting and daylighting", material: "Carved into the parapet band", context: "Triangular openings released hot air from upper rooms and admitted glare-free light." },
       { name: "Shurfat", purpose: "Crowning the roofline", material: "Stepped earthen merlons", context: "A defensive memory turned decorative; the stepped triangle is Najd's most recognisable silhouette." },
@@ -124,7 +125,7 @@ export const najdi: Empire = {
     title: "Arriving from the Street",
     cta: "Walk the Approach",
     text: "The street face stays reserved — small slots above, deep glazed bays below — and the life of the house is drawn inward. Guests are received in the majlis by the door; the family lives around the court.",
-    image: "/img/najdi/daily-life.webp",
+    image: "/img/najdi/daily-life.jpg",
   },
   geography: {
     kicker: "Where It Belongs",

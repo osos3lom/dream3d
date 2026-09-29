@@ -134,9 +134,11 @@ export interface Empire {
   description: string;
   modelPath: string;
   /** Photoreal exterior render, used where the villa is given a full-width
-   *  presentation. Optional: styles without one fall back to the flat
-   *  massing render in `/img/<id>/hero.webp`. */
+   *  presentation. Optional: styles without one fall back to `hero`. */
   ultraHero?: string;
+  /** Small-screen / fallback exterior render. Optional: styles without one
+   *  fall back to the flat massing render at `/img/<id>/hero.webp`. */
+  hero?: string;
   /** per-empire warm accent used for subtle scene tinting */
   tint: string;
   camera: CameraPreset;

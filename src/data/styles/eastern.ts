@@ -85,7 +85,7 @@ export const eastern: Empire = {
     title: "Inside the Court",
     cta: "Step into the Court",
     text: "Under the riwaq the light drops and the air moves: pointed arches frame the pool, the two-tone paving and the palms, with glazed rooms opening off every side.",
-    image: "/img/eastern/interior.webp",
+    image: "/img/eastern/interior.jpg",
   },
   floorPlan: {
     kicker: "Floor Plan",
@@ -109,7 +109,7 @@ export const eastern: Empire = {
     title: "The Eastern Coastal Vocabulary",
     cta: "Explore Motifs",
     text: "A trading coast's architecture: sea stone, gypsum from the sabkha, timber from across the ocean and every device for catching the breeze.",
-    image: "/img/eastern/artifacts.webp",
+    image: "/img/eastern/artifacts.jpg",
     items: [
       { name: "Coral Stone (Farush)", purpose: "Light, insulating walls", material: "Porous marine limestone", context: "Cut from the shallows and laid in gypsum mortar." },
       { name: "Gypsum Plaster (Juss)", purpose: "Smooth, cool surfaces", material: "Burnt gypsum", context: "Rendered and carved into screens, friezes and niches." },
@@ -124,7 +124,7 @@ export const eastern: Empire = {
     title: "Arriving from the Lane",
     cta: "Walk the Approach",
     text: "From the lane, the house is a long white wall: coral stone at its foot, carved screens and a row of beam ends above, the sea-blue door under its pointed hood, and the wind tower rising at one corner.",
-    image: "/img/eastern/daily-life.webp",
+    image: "/img/eastern/daily-life.jpg",
   },
   geography: {
     kicker: "Where It Belongs",

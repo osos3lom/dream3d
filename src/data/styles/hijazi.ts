@@ -14,6 +14,7 @@ export const hijazi: Empire = {
     "A three-storey villa in the spirit of Al-Balad, Jeddah: coral-stone walls coursed with timber tie-beams, stacked wooden rawashin screening the upper floors, lattice ventilation high in every wall and a roof terrace behind a latticed parapet.",
   modelPath: "/models/hijazi.glb",
   ultraHero: "/img/hijazi/ultra-hero.jpg",
+  hero: "/img/hijazi/hero.jpg",
   tint: "#b8905e",
   camera: { azimuth: -32, elevation: 20, dist: 1.0, targetY: 0.36 },
   facts: [
@@ -83,7 +84,7 @@ export const hijazi: Empire = {
     title: "The Rear Garden",
     cta: "Step into the Garden",
     text: "Behind the house, a garden with a long pool and a lattice pergola opens to the glazed ground floor; the rawashin on the side walls watch over it.",
-    image: "/img/hijazi/interior.webp",
+    image: "/img/hijazi/interior.jpg",
   },
   floorPlan: {
     kicker: "Floor Plan",
@@ -106,7 +107,7 @@ export const hijazi: Empire = {
     title: "The Hijazi Vocabulary",
     cta: "Explore Motifs",
     text: "A house built for sea breeze and privacy: timber screens, pale coral stone and openings everywhere the air can move.",
-    image: "/img/hijazi/artifacts.webp",
+    image: "/img/hijazi/artifacts.jpg",
     items: [
       { name: "Roshan", purpose: "Breeze, shade and privacy", material: "Timber bay with lattice", context: "The defining element of Jeddah's old houses, often imported teak, carved and painted." },
       { name: "Mashrabiya Lattice", purpose: "Filtered light and air", material: "Turned or crossed timber slats", context: "A fine grid that hides the interior while letting the wind through." },
@@ -121,7 +122,7 @@ export const hijazi: Empire = {
     title: "The Street Front",
     cta: "Walk the Approach",
     text: "From the lane, the house rises in three coral-stone storeys, its rawashin reaching out over the street. The family looks out from behind the lattice; guests enter through the carved door below.",
-    image: "/img/hijazi/daily-life.webp",
+    image: "/img/hijazi/daily-life.jpg",
   },
   geography: {
     kicker: "Where It Belongs",

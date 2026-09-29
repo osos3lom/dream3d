@@ -14,6 +14,7 @@ export const asiri: Empire = {
     "A villa of stepped stone towers on a terraced plinth, as in the mountain villages of Asir: slate rain courses ribbing every wall, white-framed windows crowned with qamariya lights, and bands of Al-Qatt Al-Asiri geometry painted in red, yellow, green and blue.",
   modelPath: "/models/asiri.glb",
   ultraHero: "/img/asiri/ultra-hero.jpg",
+  hero: "/img/asiri/hero.jpg",
   tint: "#a66a4c",
   camera: { azimuth: -32, elevation: 20, dist: 1.0, targetY: 0.36 },
   facts: [
@@ -123,7 +124,7 @@ export const asiri: Empire = {
     title: "The Asiri Vocabulary",
     cta: "Explore Motifs",
     text: "Stone, slate and paint: the Asiri house is the most colourful of the Saudi traditions, and its colour is always geometric.",
-    image: "/img/asiri/artifacts.webp",
+    image: "/img/asiri/artifacts.jpg",
     items: [
       { name: "Al-Qatt Painting", purpose: "Decoration and identity", material: "Mineral pigments on lime", context: "Women painted interiors and facades with triangle and band patterns; UNESCO-listed in 2017." },
       { name: "Slate Courses", purpose: "Shedding rain", material: "Thin slate slabs", context: "Projecting slabs protect stone and mud walls from the highland rains." },
@@ -138,7 +139,7 @@ export const asiri: Empire = {
     title: "Climbing to the Terrace",
     cta: "Walk the Approach",
     text: "A stair climbs from the lawn to the stone terrace, where the towers' painted door opens. The glazed wing below is for everyday living; the towers hold the bedrooms and the views.",
-    image: "/img/asiri/daily-life.webp",
+    image: "/img/asiri/daily-life.jpg",
   },
   geography: {
     kicker: "Where It Belongs",

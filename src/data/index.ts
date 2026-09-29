@@ -20,6 +20,7 @@ const rebase = (e: Empire): Empire => ({
   ...e,
   modelPath: asset(e.modelPath),
   ultraHero: e.ultraHero ? asset(e.ultraHero) : undefined,
+  hero: e.hero ? asset(e.hero) : undefined,
   interior: { ...e.interior, image: asset(e.interior.image) },
   floorPlan: {
     ...e.floorPlan,
@@ -148,10 +149,12 @@ export function getLocalizedEmpire(empire: Empire, lang: Language): Empire {
 
 export const DEFAULT_EMPIRE_ID = "najdi";
 
-/** Resolve per-empire image paths (thumbnail derived from hero set) */
+/** Resolve per-empire image paths (thumbnail derived from hero set).
+ *  `hero` is the style's own render where one exists — it is already rebased
+ *  by `rebase` — and otherwise the conventional flat massing render. */
 export const empireImages = (e: Empire) => ({
   thumbnail: asset(`/img/${e.id}/thumbnail.webp`),
-  hero: asset(`/img/${e.id}/hero.webp`),
+  hero: e.hero ?? asset(`/img/${e.id}/hero.webp`),
   interior: e.interior.image,
   floorPlan: e.floorPlan.image,
   artifacts: e.artifacts.image,

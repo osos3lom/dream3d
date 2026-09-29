@@ -129,6 +129,11 @@ export class ViewerEngine {
   private shadowDirty = 2;
   /** models retired mid-transition; freed once the animation is over */
   private retired: LoadedModel[] = [];
+  /** Procedurally built models, kept separate from `cache`.
+   *  Loaded exhibits are expensive to fetch and parse, so they are worth
+   *  holding; generated designs are cheap to rebuild and arrive by the dozen
+   *  during a scrub, so they get their own smaller, eagerly-trimmed pool. */
+  private generated = new Map<string, LoadedModel>();
   private resizeObs: ResizeObserver | null = null;
   /** throwaway target used to warm a model's pipelines off-screen */
   private warmTarget: THREE.RenderTarget | null = null;
@@ -492,7 +497,83 @@ export class ViewerEngine {
     if (!this.cache.has(empire.id)) this.load(empire).catch(() => undefined);
   }
 
-  private normalize(sceneObj: THREE.Object3D, modelKey: string): LoadedModel {
+  /** Take geometry this engine did not load and put it through exactly the
+   *  same pipeline as a GLB: normalisation, footprint scaling, BVH, the rim
+   *  node material, anchor snapping and the warm pass.
+   *
+   *  This is the single entry point for procedurally built scenes. Nothing in
+   *  `normalize` is GLTF-specific, which is why the seam is this small — the
+   *  alternative, a parallel path for generated geometry, would drift from the
+   *  loaded one within a release.
+   *
+   *  `bvh` and `warm` exist because the studio rebuilds on every slider tick:
+   *  `computeBoundsTree` blocks the main thread for tens of milliseconds and
+   *  `warm` renders the group off-screen, neither of which is acceptable at
+   *  scrub rate. Drop both while dragging, then do one full pass on release so
+   *  pins and occlusion come back. */
+  async adopt(
+    root: THREE.Object3D,
+    modelKey: string,
+    opts: { bvh?: boolean; warm?: boolean; framing?: Framing } = {},
+  ): Promise<LoadedModel> {
+    const existing = this.generated.get(modelKey);
+    if (existing) return existing;
+
+    const model = this.normalize(root, modelKey, opts.bvh !== false);
+    if (opts.framing) this.snapAnchors(model, opts.framing);
+    if (opts.warm !== false) await this.warm(model);
+
+    this.generated.set(modelKey, model);
+    this.trimGenerated(modelKey);
+    return model;
+  }
+
+  /** Swap geometry in place: no turntable spin, no fly-to, camera untouched.
+   *  `transition` plays a 1.5s 720-degree handover, which is right for changing
+   *  exhibit and absurd for nudging a parapet. */
+  swapInPlace(model: LoadedModel) {
+    const old = this.current;
+    this.activeTl?.kill();
+    this.activeTl = null;
+    if (old && old !== model) this.stage.remove(old.group);
+    model.group.rotation.set(0, 0, 0);
+    model.group.position.set(0, 0, 0);
+    model.group.scale.setScalar(1);
+    this.present(model);
+    this.markShadowDirty(3);
+  }
+
+  /** Free a generated model and everything keyed to it.
+   *
+   *  `touchResidency` only evicts from `this.cache`, which `adopt` never fills,
+   *  so generated models need their own disposal. The height field and the
+   *  snapped anchors are both keyed by model key and would otherwise leak one
+   *  entry per rebuild — invisible per tick, and fatal across a ten-minute
+   *  design session. */
+  disposeGenerated(modelKey: string) {
+    const m = this.generated.get(modelKey);
+    if (!m || m === this.current) return;
+    this.generated.delete(modelKey);
+    this.fields.delete(modelKey);
+    for (const key of [...this.snapped.keys()]) {
+      if (key.startsWith(modelKey + ":")) this.snapped.delete(key);
+    }
+    this.stage.remove(m.group);
+    this.disposeModel(m);
+  }
+
+  /** Keep the current design and the two most recent variants; drop the rest.
+   *  Generated models are cheap to rebuild and a scrub session produces a lot
+   *  of them. */
+  private trimGenerated(keep: string) {
+    const keys = [...this.generated.keys()].filter((k) => k !== keep);
+    while (keys.length > 2) {
+      const drop = keys.shift();
+      if (drop) this.disposeGenerated(drop);
+    }
+  }
+
+  private normalize(sceneObj: THREE.Object3D, modelKey: string, buildBvh = true): LoadedModel {
     const group = new THREE.Group();
     const inner = sceneObj;
     group.add(inner);
@@ -527,7 +608,9 @@ export class ViewerEngine {
           // it, and fatter leaves mean far less tree to build — this runs on
           // the main thread during load, and our query load is tiny (one snap
           // pass plus four occlusion rays a few times a second)
-          (geo as any).computeBoundsTree({ indirect: true, targetLeafSize: 24 });
+          // Skipped while the studio is scrubbing: this blocks the main thread
+          // and nothing queries it until the drag ends.
+          if (buildBvh) (geo as any).computeBoundsTree({ indirect: true, targetLeafSize: 24 });
         }
         this.applyRim(m);
         meshes.push(m);
@@ -580,7 +663,12 @@ export class ViewerEngine {
    *  instant instead of a fresh download, re-parse and re-snap. */
   present(model: LoadedModel) {
     const old = this.current;
-    if (old && old.modelKey !== model.modelKey) this.stage.remove(old.group);
+    // Identity, not key. Two different LoadedModels could never share an id
+    // while every model came from a GLB, so comparing keys was accidentally
+    // correct. The studio rebuilds a design under a stable key on every slider
+    // tick, and the old group would never be removed — two buildings stacked
+    // on the turntable. Comparing the objects is both correct and simpler.
+    if (old && old !== model) this.stage.remove(old.group);
     this.current = model;
     this.occlusionCache.clear();
     this.attach(model);
@@ -590,7 +678,7 @@ export class ViewerEngine {
     if (this.xrayOn) this.setXray(true);
   }
 
-  /** Mark an framing as most-recently-used and evict past the residency cap.
+  /** Mark a model as most-recently-used and evict past the residency cap.
    *  Evicted models are queued, never freed mid-animation. */
   private touchResidency(id: string) {
     this.lru = [id, ...this.lru.filter((x) => x !== id)];
@@ -1266,6 +1354,14 @@ export class ViewerEngine {
     this.flushRetired();
     if (this.current) this.disposeModel(this.current);
     this.cache.forEach((_v, id) => this.disposeCached(id));
+    // Generated models live in their own pool, so the loaded-model teardown
+    // above never reaches them.
+    this.generated.forEach((m) => {
+      if (m !== this.current) this.disposeModel(m);
+    });
+    this.generated.clear();
+    this.fields.clear();
+    this.snapped.clear();
     this.envTex?.dispose();
     this.warmTarget?.dispose();
     this.controls?.dispose();
