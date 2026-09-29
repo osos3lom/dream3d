@@ -13,7 +13,6 @@ export const salmani: Empire = {
   description:
     "A contemporary Riyadh villa in the Salmani idiom: Najdi proportions and triangle motifs redrawn with cleaner geometry, a modular limestone facade cut by deep vertical shadow lines, and a cantilevered upper floor floating over a glazed ground level.",
   modelPath: "/models/salmani.glb",
-  hero: "/img/salmani/hero.jpg",
   tint: "#d2bb92",
   camera: { azimuth: -30, elevation: 24, dist: 1.0, targetY: 0.3 },
   facts: [
@@ -80,7 +79,7 @@ export const salmani: Empire = {
     title: "The Pool Court",
     cta: "Step into the Court",
     text: "From the pool deck, the rear block is all glass behind a screen of stone fins; the long pool, deck and pergola make an outdoor room shaded by the house itself.",
-    image: "/img/salmani/interior.jpg",
+    image: "/img/salmani/interior.webp",
   },
   floorPlan: {
     kicker: "Floor Plan",
@@ -103,7 +102,7 @@ export const salmani: Empire = {
     title: "The Salmani Vocabulary",
     cta: "Explore Motifs",
     text: "Heritage in the proportions, modernity in the detailing: every Salmani motif is a Najdi idea made simpler, larger and more precise.",
-    image: "/img/salmani/artifacts.jpg",
+    image: "/img/salmani/artifacts.webp",
     items: [
       { name: "Shadow Slots", purpose: "Glare-free daylight", material: "Deep reveals in limestone", context: "Narrow openings deep in thick walls — the Najdi window logic at modern scale." },
       { name: "Triangle Band", purpose: "Heritage signature", material: "Pierced stone relief", context: "A disciplined, repeated furjat pattern crowning each volume." },
@@ -118,7 +117,7 @@ export const salmani: Empire = {
     title: "Arriving at the Villa",
     cta: "Walk the Approach",
     text: "From the street the house is calm and monolithic: a long stone volume, a tall entry tower and the glow of the glazed ground floor. Family life opens toward the pool at the back.",
-    image: "/img/salmani/daily-life.jpg",
+    image: "/img/salmani/daily-life.webp",
   },
   geography: {
     kicker: "Where It Belongs",
