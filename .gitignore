@@ -7,6 +7,15 @@
 /dist-ssr
 /build
 
+# Leftovers from the Next.js build this project was briefly ported to. The app
+# is Vite again; these are generated and safe to delete.
+/.next
+/next-env.d.ts
+
+# Python bytecode from the Blender and image scripts
+__pycache__/
+*.py[cod]
+
 # Logs
 logs
 *.log

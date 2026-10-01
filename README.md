@@ -123,26 +123,30 @@ npm run dev        # dev server on http://localhost:5173/dream3d/
 npm run build      # typecheck, then production build to dist/
 npm run preview    # serve the production build, as deployed
 npm run lint
+npm run verify     # the corpus and catalog-spec checks in scripts/studio/
+```
 
 `npm run build` runs `tsc --noEmit` first, so a type error fails the build rather than shipping.
 
 The dev server runs under `/dream3d/` rather than `/`, because that is the path the site is served
 from on GitHub Pages. Keeping development on the same prefix means a path that works locally works
 deployed. See [Deployment](#deployment).
+
 ---
 
 ## How it is put together
 
 ```
+index.html                   the single HTML entry; canonical og:/twitter: tags live here
+vite.config.ts               base path, the `@` alias, chunking, the Pages 404/.nojekyll fallback
 src/
-├─ main.tsx                entry point: mounts the app
-├─ App.tsx                 routes (`/en`, `/ar`) on React Router, lazily loading the shell
+├─ main.tsx                entry point: mounts <App> inside React's StrictMode
+├─ App.tsx                 every route, on React Router, each lazily loaded in its own chunk
 ├─ three/
-│  └─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
-│                          hotspot resolution, model residency
-├─ three/
-│  └─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
-│                          hotspot resolution, model residency
+│  ├─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
+│  │                       hotspot resolution, model residency
+│  └─ parametric/          the browser twin of the Blender kit: kit.ts builds geometry,
+│                          build.ts assembles a villa from a spec
 ├─ components/
 │  ├─ EmpireAtlasApp.tsx   app shell: layout, modal routing, responsive behaviour
 │  ├─ Viewer.tsx           canvas host, tool rail, layer menu, request sequencing
@@ -152,26 +156,42 @@ src/
 │  ├─ BottomCards.tsx      the five exploration cards
 │  ├─ Banner.tsx           dismissible attribution bar
 │  ├─ modals.tsx           lesson, quiz, artefacts, timeline, sections, ⌘K search
+│  ├─ corpus/              the reference pages' own components
+│  ├─ studio/              the parametric studio's controls
 │  └─ ui/                  shadcn/ui primitives
-├─ lib/assets.ts           re-bases `public/` paths onto Vite's BASE_URL
-├─ hooks/use-scroll-lock.ts  freezes the page behind an open overlay
+├─ routes/                 the non-exhibit pages: characters index, character, element,
+│                          studio, and a real 404
+├─ lib/
+│  ├─ assets.ts            re-bases `public/` paths onto Vite's BASE_URL
+│  ├─ utils.ts             the shadcn `cn` helper
+│  └─ studio/              spec schema, parameters, framing, permalinks, cultural lint
+├─ hooks/                  locale chrome, mobile breakpoint, scroll lock
 ├─ data/
-│  ├─ index.ts             the ordered list of styles
-│  └─ styles/*.ts          one file per style: copy, facts, hotspots, lesson, quiz, timeline (EN + AR)
+│  ├─ index.ts             the ordered list of styles, re-based through asset()
+│  ├─ styles/*.ts          one file per style: copy, facts, hotspots, lesson, quiz, timeline (EN + AR)
+│  ├─ characters/          the architectural characters, with the registry invariants asserted
+│  ├─ corpus/              cultural elements, palettes and sources, each carrying provenance
+│  └─ catalog/             parametric villa specs
 ├─ i18n/translations.ts    the UI string table (EN + AR)
-└─ types/empire.ts         the data contract every style satisfies
+├─ index.css               Tailwind layers, plus the corpus and studio stylesheets
+├─ styles/                 corpus.css, studio.css
+└─ types/                  empire.ts (the exhibit contract), character.ts, element.ts,
+                           provenance.ts, i18n.ts
 scripts/
 ├─ blender/                procedural villa kit + one build script per style
+├─ studio/                 the corpus and spec verification gates
 ├─ compose_images.py       renders → public/img/<style>/*.webp
 └─ make_maps.py            schematic region maps
 ```
 
-**Stack** — Next.js 15 (App Router) · React 19 · TypeScript 5.9 · Tailwind CSS 3.4 · three.js 0.185
+**Stack** — Vite 7 · React 19 · React Router 7 · TypeScript 5.9 · Tailwind CSS 3.4 · three.js 0.185
 (WebGPU renderer with TSL node materials) · GSAP 3 · three-mesh-bvh · shadcn/ui
 
+**Code splitting** — the viewer and the parametric kit are the bulk of the bundle, and three.js is
+pinned to its own chunk, so a visitor who lands on a reference page never downloads either.
+
 **Design language** — a warm parchment palette on Cormorant Garamond and Inter, defined once as CSS
-custom properties in [`src/app/globals.css`](src/app/globals.css) and bridged into Tailwind and
-shadcn tokens.
+custom properties in [`src/index.css`](src/index.css) and bridged into Tailwind and shadcn tokens.
 
 **Responsive behaviour** — the three-column desktop stage engages at 1280px. Below that the style
 library moves into a drawer behind a hamburger, the villa detail reads inline beneath the model,
