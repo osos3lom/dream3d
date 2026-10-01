@@ -1,0 +1,238 @@
+/* The design studio.
+
+   Reuses the exhibit's three-column rhythm — controls, stage, inspector — so
+   the studio reads as the same product rather than a separate tool. Below the
+   xl breakpoint the rails stack above and below the stage rather than
+   collapsing into a drawer: the parameters are the point of the page, and
+   hiding them behind a button would make the studio feel like a viewer with
+   settings. */
+
+.studio-grid {
+  display: grid;
+  gap: 0.85rem;
+  grid-template-columns: 1fr;
+}
+@media (min-width: 1280px) {
+  .studio-grid {
+    grid-template-columns: 290px minmax(0, 1fr) 320px;
+    align-items: start;
+  }
+}
+
+.studio-stage {
+  min-height: 46dvh;
+  height: clamp(360px, 62dvh, 720px);
+}
+@media (min-width: 1280px) {
+  .studio-stage {
+    height: min(74dvh, 760px);
+  }
+}
+
+.studio-rail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-height: none;
+}
+@media (min-width: 1280px) {
+  .studio-rail {
+    max-height: min(74dvh, 760px);
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #d9cbb2 transparent;
+    padding-inline-end: 0.25rem;
+  }
+}
+
+.studio-group {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.studio-group__title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  margin-bottom: 0.5rem;
+}
+
+/* Parameters ------------------------------------------------------------- */
+.studio-param {
+  display: block;
+  margin-bottom: 0.7rem;
+}
+.studio-param:last-child {
+  margin-bottom: 0;
+}
+.studio-param__head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+}
+.studio-param__label {
+  font-size: 0.8rem;
+  color: var(--ink);
+}
+.studio-param__value {
+  font-size: 0.76rem;
+  color: var(--ink-muted);
+  font-variant-numeric: tabular-nums;
+}
+/* A value that has left the documented range is marked at the number, not only
+   in a note below — the number is what someone is looking at while dragging. */
+.studio-param__value.is-outside {
+  color: var(--terracotta-deep);
+  font-weight: 700;
+}
+
+.studio-param__track {
+  position: relative;
+  display: block;
+  padding: 0.35rem 0;
+}
+/* The documented sub-range, drawn on the track behind the input. */
+.studio-param__band {
+  position: absolute;
+  top: 50%;
+  height: 6px;
+  transform: translateY(-50%);
+  border-radius: 3px;
+  background: #cde0d1;
+  pointer-events: none;
+}
+.studio-param__track input[type="range"] {
+  position: relative;
+  width: 100%;
+  margin: 0;
+  background: transparent;
+  accent-color: var(--terracotta);
+}
+.studio-param__warn {
+  display: block;
+  font-size: 0.7rem;
+  line-height: 1.4;
+  color: var(--terracotta-deep);
+}
+
+.studio-catalog-link {
+  display: block;
+  padding: 0.35rem 0;
+  font-size: 0.82rem;
+  color: var(--slate-icon);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.studio-catalog-link:hover {
+  color: var(--ink);
+}
+
+/* Inspector -------------------------------------------------------------- */
+.studio-block {
+  padding: 0.75rem 0.85rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--surface);
+}
+.studio-block__key {
+  display: block;
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-muted);
+  margin-bottom: 0.2rem;
+}
+.studio-block__link {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.studio-block__meta {
+  display: block;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  font-variant-numeric: tabular-nums;
+  text-transform: capitalize;
+}
+.studio-block__note {
+  margin-top: 0.35rem;
+  font-size: 0.76rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+.studio-issues {
+  margin: 0.25rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+.studio-issues__item {
+  position: relative;
+  padding-inline-start: 0.85rem;
+  margin-bottom: 0.4rem;
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.studio-issues__item::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.55em;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--gold);
+}
+.studio-issues__item.is-error {
+  color: var(--marker);
+}
+.studio-issues__item.is-error::before {
+  background: var(--marker);
+}
+
+.studio-notice {
+  margin-bottom: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  background: var(--paper-deep);
+  font-size: 0.82rem;
+  color: var(--ink-soft);
+}
+.studio-notice--error {
+  border-color: #e0b6ae;
+  background: #fdf1ee;
+  color: var(--marker);
+}
+
+/* The interpretation ribbon.
+
+   Pinned over the canvas for as long as generated geometry is on stage, and
+   spelled out in words rather than shown as an icon: someone screenshotting
+   the viewer has to carry the label away with the image, or the picture
+   circulates as a photograph of a building that was never built. */
+.interp-ribbon {
+  position: absolute;
+  inset-block-end: 0.6rem;
+  inset-inline-start: 0.6rem;
+  z-index: 5;
+  max-width: calc(100% - 1.2rem);
+  padding: 0.28rem 0.6rem;
+  border-radius: 999px;
+  border: 1px solid #e2bfae;
+  background: rgba(253, 243, 238, 0.94);
+  font-size: 0.68rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: var(--terracotta-deep);
+  pointer-events: none;
+}

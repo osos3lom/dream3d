@@ -1,20 +1,25 @@
-"use client";
-
 import { memo, useEffect, useMemo, useRef } from "react";
 import * as THREE from "three/webgpu";
 import gsap from "gsap";
-import type { Empire } from "@/types/empire";
-import type { ViewerEngine } from "@/three/engine";
+
+import type { Language } from "@/types/i18n";
+import { useTranslation } from "@/i18n/translations";
+import type { Framing, ViewerEngine } from "@/three/engine";
 
 interface Props {
   engine: ViewerEngine | null;
-  empire: Empire;
+  /** Only `hotspots` and `id` are read, which is exactly `Framing`. Typing it
+   *  that way lets the studio reuse this layer for a procedurally built design
+   *  without dressing a spec up as an exhibit. `Empire` satisfies `Framing`
+   *  structurally, so the exhibit's usage is unchanged. */
+  framing: Framing;
   containerRef: React.RefObject<HTMLDivElement | null>;
   activeId: string | null;
   hoverId: string | null;
   onHover: (id: string | null) => void;
   onActivate: (id: string | null) => void;
   visible: boolean;
+  lang: Language;
 }
 
 const TIP_W = 224;
@@ -30,23 +35,25 @@ const TIP_GAP = 18;
  *  and a class is only written when it actually changes. */
 export const HotspotLayer = memo(function HotspotLayer({
   engine,
-  empire,
+  framing,
   containerRef,
   activeId,
   hoverId,
   onHover,
   onActivate,
   visible,
+  lang,
 }: Props) {
+  const t = useTranslation(lang);
   const tipRef = useRef<HTMLDivElement>(null);
   const pinRefs = useRef(new Map<string, HTMLElement>());
   const size = useRef({ w: 0, h: 0 });
   const lastState = useRef(new Map<string, number>());
 
-  /* world positions, allocated once per empire and rewritten in place */
+  /* world positions, allocated once per framing and rewritten in place */
   const anchors = useMemo(
-    () => empire.hotspots.map((hs) => ({ id: hs.id, world: new THREE.Vector3() })),
-    [empire],
+    () => framing.hotspots.map((hs) => ({ id: hs.id, world: new THREE.Vector3() })),
+    [framing],
   );
 
   /* stage size is read on resize, never per frame */
@@ -72,8 +79,8 @@ export const HotspotLayer = memo(function HotspotLayer({
       const { w, h } = size.current;
       if (!w || !h) return;
 
-      for (let i = 0; i < empire.hotspots.length; i++) {
-        const hs = empire.hotspots[i];
+      for (let i = 0; i < framing.hotspots.length; i++) {
+        const hs = framing.hotspots[i];
         const el = pinRefs.current.get(hs.id);
         if (!el) continue;
         // one world-space resolve per pin per frame, shared with occlusion
@@ -118,7 +125,7 @@ export const HotspotLayer = memo(function HotspotLayer({
     return () => {
       off();
     };
-  }, [engine, empire, anchors, activeId, hoverId, visible]);
+  }, [engine, framing, anchors, activeId, hoverId, visible]);
 
   /* pins arrive as the dwelling settles */
   useEffect(() => {
@@ -136,9 +143,9 @@ export const HotspotLayer = memo(function HotspotLayer({
     return () => {
       tw.kill();
     };
-  }, [empire.id, visible]);
+  }, [framing.id, visible]);
 
-  const hovered = empire.hotspots.find((h) => h.id === hoverId) ?? null;
+  const hovered = framing.hotspots.find((h) => h.id === hoverId) ?? null;
 
   return (
     /* kept mounted while hidden so the pins fade with the dwelling rather
@@ -148,7 +155,7 @@ export const HotspotLayer = memo(function HotspotLayer({
       aria-hidden={!visible}
       aria-label="Architectural markers"
     >
-      {empire.hotspots.map((hs) => (
+      {framing.hotspots.map((hs) => (
         <button
           key={hs.id}
           className="hs-pin"
@@ -186,7 +193,7 @@ export const HotspotLayer = memo(function HotspotLayer({
             <span className="cat">{hovered.category.replace("-", " ")}</span>
             <span className="t">{hovered.title}</span>
             <span className="d">{hovered.short}</span>
-            <span className="hint">Click to explore</span>
+            <span className="hint">{t.viewer.pinHint}</span>
           </>
         )}
       </div>

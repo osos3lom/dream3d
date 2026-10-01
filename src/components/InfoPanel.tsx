@@ -1,5 +1,3 @@
-"use client";
-
 import { memo } from "react";
 import type { Empire } from "@/types/empire";
 import { empireImages } from "@/data";
@@ -43,19 +41,19 @@ export const InfoPanel = memo(function InfoPanel({ empire, flow = false, animati
       className={`atlas-card flex w-full flex-col overflow-hidden ${flow ? "" : "h-full"}`}
       data-panel="info"
     >
-      <div className={flow ? "px-5 pb-5 pt-5" : "atlas-scroll min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-5"}>
+      <div className={flow ? "px-4 pb-4 pt-4 sm:px-5 sm:pb-5 sm:pt-5" : "atlas-scroll min-h-0 flex-1 overflow-y-auto px-5 pb-5 pt-5"}>
         {/* header */}
         <div className="flex items-center justify-between">
           <span className="kicker flex items-center gap-2">
             <LaurelIcon className="h-5 w-5 text-gold" aria-hidden />
             {t.infoPanel.tabs.facts}
           </span>
-          <button className="rounded-md p-1 text-ink-muted transition-colors hover:bg-paper-deep hover:text-ink" aria-label="More options">
+          <button className="touch-target -m-1 rounded-md p-1 text-ink-muted transition-colors hover:bg-paper-deep hover:text-ink" aria-label="More options">
             <MoreIcon className="h-5 w-5" />
           </button>
         </div>
 
-        <h2 className="font-display mt-2 text-[1.9rem] font-bold leading-none text-ink">{empire.dwelling}</h2>
+        <h2 className="font-display mt-2 text-[1.6rem] font-bold leading-tight text-ink sm:text-[1.9rem] sm:leading-none">{empire.dwelling}</h2>
         <p className="font-display mt-1.5 text-[1.02rem] font-medium italic text-terracotta">{empire.subtitle}</p>
 
         {/* Stacked in the narrow desktop rail */}
@@ -65,13 +63,24 @@ export const InfoPanel = memo(function InfoPanel({ empire, flow = false, animati
               flow ? "sm:w-[44%] sm:flex-none" : ""
             }`}
           >
-            <img
-              src={empireImages(empire).hero}
-              alt={`Illustration of the ${empire.dwelling}`}
-              className="block h-auto w-full object-contain"
-              loading="lazy"
-              draggable={false}
-            />
+            {/* The photoreal render is ~850KB against the massing image's 41KB,
+                so it is served only where the screen is big enough to do it
+                justice. A phone never downloads it: the `media` query is
+                evaluated before the request is made. A style without an
+                `ultraHero` (or any browser without <picture>) falls through
+                to the flat render, which is the element's own `src`. */}
+            <picture>
+              {empire.ultraHero && (
+                <source media="(min-width: 768px)" srcSet={empire.ultraHero} />
+              )}
+              <img
+                src={empireImages(empire).hero}
+                alt={`Illustration of the ${empire.dwelling}`}
+                className="block h-auto w-full object-contain"
+                loading="lazy"
+                draggable={false}
+              />
+            </picture>
           </div>
 
           <div className={flow ? "min-w-0 sm:flex-1" : ""}>

@@ -1,5 +1,3 @@
-"use client";
-
 import { memo } from "react";
 import {
   TempleIcon,
@@ -38,11 +36,11 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
   ];
 
   return (
-    <header className="relative z-40 flex h-[68px] flex-none items-center gap-2.5 border-b border-line-warm bg-paper px-3 sm:gap-4 sm:px-5">
+    <header className="relative z-40 flex h-[58px] flex-none items-center gap-2 border-b border-line-warm bg-paper px-2.5 sm:h-[68px] sm:gap-4 sm:px-5">
       {/* the nav and the empire library live in a drawer below lg */}
       <button
         onClick={onMenuOpen}
-        className="flex h-10 w-10 flex-none items-center justify-center rounded-xl border border-line-warm bg-surface text-slateblue transition-colors hover:border-line-strong xl:hidden"
+        className="flex h-11 w-11 flex-none items-center justify-center rounded-xl border border-line-warm bg-surface text-slateblue transition-colors hover:border-line-strong sm:h-10 sm:w-10 xl:hidden"
         aria-label="Open menu"
         aria-haspopup="dialog"
       >
@@ -50,16 +48,16 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
       </button>
 
       {/* Logo */}
-      <div className="flex min-w-0 flex-none items-center gap-2.5">
-        <TempleIcon className="h-8 w-8 flex-none text-terracotta" aria-hidden />
+      <div className="flex min-w-0 flex-1 items-center gap-2 sm:gap-2.5 xl:flex-initial">
+        <TempleIcon className="h-7 w-7 flex-none text-terracotta sm:h-8 sm:w-8" aria-hidden />
         <div className="min-w-0 leading-none">
-          <div className="font-display truncate text-[1.25rem] font-bold tracking-[0.01em] text-ink sm:text-[1.45rem]">{t.siteTitle}</div>
+          <div className="font-display truncate text-[1.05rem] font-bold tracking-[0.01em] text-ink sm:text-[1.45rem]">{t.siteTitle}</div>
           <div className="font-display mt-1 hidden text-[0.82rem] font-medium italic text-terracotta sm:block">{t.siteSubtitle}</div>
         </div>
       </div>
 
       {/* Nav */}
-      <nav className="mx-4 hidden items-center gap-1 xl:flex" aria-label="Primary">
+      <nav className="mx-4 hidden flex-none items-center gap-1 xl:flex" aria-label="Primary">
         {NAV.map((n) => (
           <button
             key={n.id}
@@ -73,15 +71,16 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
         ))}
       </nav>
 
-      <div className="flex-1" />
+      <div className="hidden flex-1 xl:block" />
 
       {/* Language Switcher */}
       <button
         onClick={onToggleLang}
-        className="flex h-10 items-center gap-1.5 rounded-full border border-terracotta/40 bg-surface px-3 py-1 text-[0.82rem] font-bold text-terracotta shadow-sm transition-all hover:border-terracotta hover:bg-paper"
+        className="flex h-11 flex-none items-center gap-1.5 rounded-full border border-terracotta/40 bg-surface px-2.5 py-1 text-[0.78rem] font-bold text-terracotta shadow-sm transition-all hover:border-terracotta hover:bg-paper sm:h-10 sm:px-3 sm:text-[0.82rem]"
         title={t.switchLang}
+        aria-label={t.switchLang}
       >
-        <span className="text-base">🌐</span>
+        <span className="hidden text-sm sm:inline sm:text-base" aria-hidden>🌐</span>
         <span>{t.langName}</span>
       </button>
 
@@ -98,14 +97,14 @@ export const Header = memo(function Header({ onSearchOpen, onMenuOpen, onNav, ac
       {/* compact search (mobile) */}
       <button
         onClick={onSearchOpen}
-        className="flex h-10 w-10 items-center justify-center rounded-full border border-line-warm bg-surface text-ink-muted transition-colors hover:border-line-strong md:hidden"
+        className="flex h-11 w-11 flex-none items-center justify-center rounded-full border border-line-warm bg-surface text-ink-muted transition-colors hover:border-line-strong sm:h-10 sm:w-10 md:hidden"
         aria-label={t.header.searchPlaceholder}
       >
         <SearchIcon className="h-4 w-4" />
       </button>
 
       {/* Profile */}
-      <button className="flex flex-none items-center gap-1.5 rounded-full" aria-label="Profile">
+      <button className="hidden flex-none items-center gap-1.5 rounded-full sm:flex" aria-label="Profile">
         <span className="relative block h-9 w-9 overflow-hidden rounded-full border border-line-strong bg-paper-deep">
           {/* marble-bust style avatar */}
           <svg viewBox="0 0 36 36" className="h-full w-full">

@@ -18,7 +18,7 @@ it through its courtyard, plan, street and region.
 - [How it is put together](#how-it-is-put-together)
 - [Notes on the 3D viewer](#notes-on-the-3d-viewer)
 - [Accessibility](#accessibility)
-- [Before you deploy](#before-you-deploy)
+- [Deployment](#deployment)
 
 ---
 
@@ -115,31 +115,36 @@ from a simplified outline of Saudi Arabia (schematic, not for navigation).
 
 ## Running it
 
-Requires Node 20 or newer.
+Requires Node 20 or newer (CI builds on 24).
 
 ```bash
 npm install
-npm run dev        # Next dev server on :3000
-npm run build      # production build
-npm run start      # serve the production build
+npm run dev        # dev server on http://localhost:5173/dream3d/
+npm run build      # typecheck, then production build to dist/
+npm run preview    # serve the production build, as deployed
 npm run lint
-```
 
+`npm run build` runs `tsc --noEmit` first, so a type error fails the build rather than shipping.
+
+The dev server runs under `/dream3d/` rather than `/`, because that is the path the site is served
+from on GitHub Pages. Keeping development on the same prefix means a path that works locally works
+deployed. See [Deployment](#deployment).
 ---
 
 ## How it is put together
 
 ```
 src/
-├─ app/
-│  ├─ layout.tsx           document shell and metadata
-│  ├─ page.tsx             redirects / to /en
-│  └─ [lang]/page.tsx      the localized route (en | ar)
+├─ main.tsx                entry point: mounts the app
+├─ App.tsx                 routes (`/en`, `/ar`) on React Router, lazily loading the shell
+├─ three/
+│  └─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
+│                          hotspot resolution, model residency
 ├─ three/
 │  └─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
 │                          hotspot resolution, model residency
 ├─ components/
-│  ├─ EmpireAtlasApp.tsx   app shell: layout, routing of modals, responsive behaviour
+│  ├─ EmpireAtlasApp.tsx   app shell: layout, modal routing, responsive behaviour
 │  ├─ Viewer.tsx           canvas host, tool rail, layer menu, request sequencing
 │  ├─ HotspotLayer.tsx     screen-space pins and their hover annotations
 │  ├─ EmpireLibrary.tsx    the style rail (desktop) and drawer contents (mobile)
@@ -148,6 +153,8 @@ src/
 │  ├─ Banner.tsx           dismissible attribution bar
 │  ├─ modals.tsx           lesson, quiz, artefacts, timeline, sections, ⌘K search
 │  └─ ui/                  shadcn/ui primitives
+├─ lib/assets.ts           re-bases `public/` paths onto Vite's BASE_URL
+├─ hooks/use-scroll-lock.ts  freezes the page behind an open overlay
 ├─ data/
 │  ├─ index.ts             the ordered list of styles
 │  └─ styles/*.ts          one file per style: copy, facts, hotspots, lesson, quiz, timeline (EN + AR)
@@ -169,6 +176,19 @@ shadcn tokens.
 **Responsive behaviour** — the three-column desktop stage engages at 1280px. Below that the style
 library moves into a drawer behind a hamburger, the villa detail reads inline beneath the model,
 and the exploration cards step from five columns to three, two, then one.
+
+**On a phone** the viewer's tool rail leaves the left edge and docks along the bottom of the stage as
+a single scrolling row — inside the thumb's arc, and no longer covering a third of the canvas. Modals
+become sheets that hold the page still behind them. Layout decisions that depend on having room test
+*both* dimensions rather than width alone, because a phone held in landscape is 844px wide and only
+390px tall; the rail, the stage height and the orientation tip all switch on `min-height` as well as
+`min-width`.
+
+**iOS specifics** — the page is laid out edge to edge with `viewport-fit=cover`, and the insets are
+given back through `env(safe-area-inset-*)`: whichever bar is topmost owns the notch, the last
+section on the page clears the home indicator, and the horizontal inset is applied once on `body` so
+a landscape notch never crops content. Heights are `dvh` rather than `vh`, so a collapsing URL bar
+does not clip the stage. Text fields are at least 16px, below which Safari zooms the page on focus.
 
 ---
 
@@ -213,11 +233,47 @@ when it changes.
 - Semantic landmarks, labelled controls, `aria-pressed`/`aria-expanded` on toggles, and live regions
   on loading state
 - Focus rings are never removed, only restyled
+- Touch targets meet the 44px guideline under `pointer: coarse`; small icon buttons grow their hit
+  area with a pseudo-element rather than their visual size, so the design is unchanged on a desktop
+- Controls that only appear on hover — the favourite hearts, the hotspot annotation — have tap
+  equivalents, since a touchscreen has no hover state
 
 ---
 
-## Before you deploy
+## Deployment
 
-[`src/app/layout.tsx`](src/app/layout.tsx) resolves its `og:image` and `og:url` against
-`metadataBase`, which falls back to `http://localhost:3000`. Set `NEXT_PUBLIC_APP_URL` to the site's
-real origin before deploying, or crawlers will be handed localhost URLs.
+The site is a fully static bundle — no server, no API routes — published to GitHub Pages by
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) on every push to `main`. The workflow
+installs from the lockfile with `npm ci`, builds, and uploads `dist/` through the official Pages
+actions.
+
+**One-time repository setup.** In *Settings → Pages*, set **Source** to **GitHub Actions**. Nothing
+else is required: the workflow requests the `pages: write` and `id-token: write` permissions it needs,
+and no secrets are involved — the build reads nothing from the environment.
+
+Live at `https://osos3lom.github.io/dream3d/`.
+
+### The subpath
+
+A project site is served from `/<repo>/`, not from the domain root, so `base` in
+[`vite.config.ts`](vite.config.ts) is `/dream3d/`. Two things follow from that:
+
+- **Asset paths.** The dataset stores `public/` paths root-absolute (`/models/najdi.glb`). Those are
+  re-based once, in [`src/data/index.ts`](src/data/index.ts), through
+  [`asset()`](src/lib/assets.ts). Anything new that points at a file in `public/` at runtime has to
+  go through the same helper — a bare `/img/...` string will 404 under the subpath.
+- **Deep links.** GitHub Pages has no rewrite rules, so `/dream3d/ar` matches no file. The build
+  writes a copy of `index.html` to `404.html`, which Pages serves for unmatched paths; the app boots
+  from it and React Router renders the route the URL asks for. A `.nojekyll` file is emitted beside
+  it so Pages serves the output verbatim.
+
+**Renaming the repository, or using a custom domain,** means changing the base. It is read from
+`VITE_BASE`, so no edit to the config is needed:
+
+```bash
+VITE_BASE=/my-other-repo/ npm run build   # a differently named project site
+VITE_BASE=/ npm run build                 # a custom domain, or a user/org site
+```
+
+The canonical URLs in the `og:` and `twitter:` tags of [`index.html`](index.html) are absolute and
+point at the GitHub Pages address; update them if the site moves.

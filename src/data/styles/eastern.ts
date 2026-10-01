@@ -2,12 +2,18 @@ import type { Empire } from "@/types/empire";
 
 export const eastern: Empire = {
   id: "eastern",
+  // Links this exhibit to the architectural character it interprets.
+  // All five original villas are contemporary interpretations, not
+  // reconstructions — the typology says so explicitly.
+  characterId: "eastern-coast",
+  typology: "contemporary",
   name: "Eastern Coastal",
   dwelling: "Modern Gulf Courtyard Villa",
   subtitle: "Coral, gypsum and sea breeze on the Arabian Gulf",
   description:
     "A courtyard villa of the Gulf coast in the manner of old Qatif: white gypsum walls over a coral-stone base, carved gypsum screens in every opening, mangrove danchal beams at the roofline, a wind tower catching the breeze and a pointed-arch riwaq around a two-tone paved court.",
   modelPath: "/models/eastern.glb",
+  ultraHero: "/img/eastern/ultra-hero.jpg",
   tint: "#9fb0a6",
   camera: { azimuth: -34, elevation: 26, dist: 1.0, targetY: 0.28 },
   facts: [
@@ -20,6 +26,7 @@ export const eastern: Empire = {
   hotspots: [
     {
       id: "coral-course",
+      elementId: "farush-base",
       title: "Coral-Stone Base",
       short: "Rough coral blocks at the foot of the walls",
       detail:
@@ -30,6 +37,7 @@ export const eastern: Empire = {
     },
     {
       id: "gypsum-screens",
+      elementId: "gypsum-screen",
       title: "Carved Gypsum Screens",
       short: "Perforated panels in every opening",
       detail:
@@ -40,6 +48,7 @@ export const eastern: Empire = {
     },
     {
       id: "danchal",
+      elementId: "danchal",
       title: "Danchal Beams",
       short: "Mangrove pole ends at the roofline",
       detail:
@@ -50,6 +59,7 @@ export const eastern: Empire = {
     },
     {
       id: "badgir",
+      elementId: "badgir",
       title: "Badgir Wind Tower",
       short: "Slotted tower that pulls breeze down",
       detail:
@@ -60,6 +70,7 @@ export const eastern: Empire = {
     },
     {
       id: "riwaq-court",
+      elementId: "riwaq",
       title: "Riwaq & Qatif Court",
       short: "Pointed arcade around a two-tone court",
       detail:
@@ -82,6 +93,7 @@ export const eastern: Empire = {
     cta: "View Floor Plan",
     text: "A plan section at ground level: a two-storey street wing and three single-storey wings enclose the paved court, with the arcade along its south side.",
     image: "/img/eastern/floor-plan.webp",
+    plan: "/img/plan_eastern.svg",
     rooms: [
       { name: "Entrance", note: "Sea-blue door, gypsum hood" },
       { name: "Majlis", note: "Street wing" },

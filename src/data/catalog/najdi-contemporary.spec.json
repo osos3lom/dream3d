@@ -1,0 +1,167 @@
+{
+  "specVersion": 1,
+  "characterId": "najdi",
+  "typology": "contemporary",
+  "title": {
+    "en": "Najdi courtyard villa, street elevation",
+    "ar": "فيلا نجدية بفناء، واجهة الشارع"
+  },
+  "rationale": {
+    "en": "Three masses wrap a courtyard on its south, west and east sides, leaving the north open to the garden. The street elevation keeps the Najdi habit of turning away from the road: a single deep entrance under a tarma, small openings, and a furjat band venting the upper floor beneath a crowned parapet. Glazing faces the court rather than the street, which is where the privacy and the shade both come from.",
+    "ar": "ثلاث كتل تحيط بالفناء من الجنوب والغرب والشرق وتترك الشمال مفتوحاً على الحديقة. تحافظ واجهة الشارع على عادة نجدية في الانصراف عن الطريق: مدخل واحد غائر تحته طرمة، وفتحات صغيرة، وشريط فرجات يهوّي الطابق العلوي أسفل دروة متوّجة. ويتجه الزجاج إلى الفناء لا إلى الشارع، ومن هناك تأتي الخصوصية والظل معاً."
+  },
+  "palette": { "paletteId": "najdi-earth" },
+  "masses": [
+    {
+      "id": "front-wing",
+      "role": "front-wing",
+      "footprint": [-9, -10, 9, -2],
+      "base": 0.25,
+      "storeys": 2,
+      "storeyHeight": 3.4,
+      "wallThickness": 0.4,
+      "material": "mud",
+      "faces": [
+        {
+          "face": "S",
+          "exposure": "street",
+          "openings": [
+            { "u": [-1.4, 1.4], "z": [0, 2.6], "fill": "door" },
+            { "u": [-6.2, -4.8], "z": [1.2, 2.4], "fill": "glass" },
+            { "u": [4.8, 6.2], "z": [1.2, 2.4], "fill": "glass" },
+            { "u": [-6.2, -4.8], "z": [4.6, 5.8], "fill": "glass" },
+            { "u": [4.8, 6.2], "z": [4.6, 5.8], "fill": "glass" }
+          ],
+          "elements": [
+            {
+              "elementId": "furjat",
+              "zone": "upper",
+              "u": [-8.6, 8.6],
+              "z": 6.2,
+              "params": { "height": 0.75, "base": 0.52, "pitch": 0.92 },
+              "material": "mud"
+            },
+            {
+              "elementId": "tarma",
+              "zone": "upper",
+              "u": [-0.8, 0.8],
+              "z": 3.6,
+              "params": { "width": 1.6, "height": 1.1, "depth": 0.45 },
+              "material": "mud"
+            }
+          ]
+        },
+        {
+          "face": "N",
+          "exposure": "court",
+          "openings": [
+            { "u": [-7.5, -2.5], "z": [0, 2.9], "fill": "glass" },
+            { "u": [2.5, 7.5], "z": [0, 2.9], "fill": "glass" }
+          ],
+          "elements": []
+        }
+      ],
+      "crown": {
+        "elementIds": ["shurfat"],
+        "params": { "width": 0.56, "height": 0.6, "pitch": 1.5, "steps": 3 },
+        "sides": "SNEW"
+      }
+    },
+    {
+      "id": "west-wing",
+      "role": "side-wing",
+      "footprint": [-9, -2, -4, 6],
+      "base": 0.25,
+      "storeys": 1,
+      "storeyHeight": 3.4,
+      "wallThickness": 0.4,
+      "material": "mud",
+      "faces": [
+        {
+          "face": "E",
+          "exposure": "court",
+          "openings": [{ "u": [-0.5, 4.5], "z": [0, 2.8], "fill": "glass" }],
+          "elements": []
+        }
+      ],
+      "crown": {
+        "elementIds": ["shurfat"],
+        "params": { "width": 0.56, "height": 0.6, "pitch": 1.5, "steps": 3 },
+        "sides": "NEW"
+      }
+    },
+    {
+      "id": "east-wing",
+      "role": "side-wing",
+      "footprint": [4, -2, 9, 6],
+      "base": 0.25,
+      "storeys": 1,
+      "storeyHeight": 3.4,
+      "wallThickness": 0.4,
+      "material": "mud",
+      "faces": [
+        {
+          "face": "W",
+          "exposure": "court",
+          "openings": [{ "u": [-0.5, 4.5], "z": [0, 2.8], "fill": "glass" }],
+          "elements": []
+        }
+      ],
+      "crown": {
+        "elementIds": ["shurfat"],
+        "params": { "width": 0.56, "height": 0.6, "pitch": 1.5, "steps": 3 },
+        "sides": "NEW"
+      }
+    }
+  ],
+  "site": {
+    "plot": [-17, -14, 17, 14],
+    "court": {
+      "footprint": [-4, -2, 4, 6],
+      "elementIds": ["hosh"],
+      "params": { "width": 8, "depth": 8 }
+    },
+    "planting": [
+      { "kind": "palm", "at": [-2.6, 4.2], "height": 6.2, "seed": 11 },
+      { "kind": "palm", "at": [2.6, 4.2], "height": 5.4, "seed": 23 },
+      { "kind": "shrub", "at": [-3.2, 0.4], "height": 0.8, "seed": 7 },
+      { "kind": "shrub", "at": [3.2, 0.4], "height": 0.8, "seed": 9 }
+    ]
+  },
+  "anchors": [
+    { "id": "shurfat", "elementId": "shurfat", "anchor": [0.5, 0.5, 0.92], "snap": "roof" },
+    { "id": "furjat", "elementId": "furjat", "anchor": [0.35, 0.02, 0.78], "snap": "wall" },
+    { "id": "tarma", "elementId": "tarma", "anchor": [0.5, 0.02, 0.5], "snap": "wall" },
+    { "id": "hosh", "elementId": "hosh", "anchor": [0.5, 0.55, 0.03], "snap": "court" }
+  ],
+  "camera": { "azimuth": -34, "elevation": 26, "dist": 1, "targetY": 0.28 },
+  "provenance": {
+    "kind": "interpretation",
+    "author": "studio-team",
+    "generatedAt": "2026-09-29T00:00:00.000Z",
+    "derivedFrom": [
+      {
+        "elementId": "shurfat",
+        "citations": [
+          { "sourceId": "dasc-architecture-map-2025", "locus": "Najdi Architecture" },
+          { "sourceId": "unesco-whc-1329-at-turaif", "locus": "At-Turaif District, inscribed 2010" }
+        ]
+      },
+      {
+        "elementId": "furjat",
+        "citations": [{ "sourceId": "dasc-architecture-map-2025", "locus": "Najdi Architecture" }]
+      },
+      {
+        "elementId": "tarma",
+        "citations": [{ "sourceId": "dasc-architecture-map-2025", "locus": "Najdi Architecture" }]
+      },
+      {
+        "elementId": "hosh",
+        "citations": [
+          { "sourceId": "unesco-whc-1329-at-turaif", "locus": "At-Turaif District, inscribed 2010" }
+        ]
+      }
+    ]
+  },
+  "warnings": []
+}

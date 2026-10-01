@@ -21,7 +21,22 @@ import { GLTFLoader } from "three/addons/loaders/GLTFLoader.js";
 import { DRACOLoader } from "three/addons/loaders/DRACOLoader.js";
 import { computeBoundsTree, disposeBoundsTree, acceleratedRaycast } from "three-mesh-bvh";
 import gsap from "gsap";
-import type { Empire, Vec3 } from "@/types/empire";
+import type { CameraPreset, Empire, Hotspot, Vec3 } from "@/types/empire";
+
+/** What the engine needs in order to frame and annotate a model.
+ *
+ *  It reads exactly four things off an exhibit — its id, its tint, its camera
+ *  preset and its hotspots — and nothing else. Naming that slice means a
+ *  procedurally built design can be framed by the same code without pretending
+ *  to be an `Empire`. `Empire` satisfies this structurally, so every existing
+ *  call site keeps compiling unchanged. */
+export interface Framing {
+  id: string;
+  tint: string;
+  camera: CameraPreset;
+  hotspots: Hotspot[];
+}
+import { asset } from "@/lib/assets";
 
 THREE.Mesh.prototype.raycast = acceleratedRaycast;
 (THREE.BufferGeometry.prototype as any).computeBoundsTree = computeBoundsTree;
@@ -75,7 +90,12 @@ export interface LoadedModel {
   group: THREE.Group;
   meshes: THREE.Mesh[];
   size: THREE.Vector3;
-  empireId: string;
+  /** Identifies this parsed model in the residency and snap caches. For a
+   *  loaded exhibit it is the exhibit id; for a generated design it is a hash
+   *  of the spec. Deliberately not called `empireId` any more — it stopped
+   *  being one the moment geometry could come from somewhere other than a GLB,
+   *  and a cache keyed on a lie is a bug waiting to be written. */
+  modelKey: string;
 }
 
 type FrameCallback = () => void;
@@ -112,7 +132,7 @@ export class ViewerEngine {
   private wireOn = false;
   private xrayOn = false;
   private grid: THREE.PolarGridHelper | null = null;
-  /* lighting rig — kept as fields so an empire swap can re-tint it */
+  /* lighting rig — kept as fields so an framing swap can re-tint it */
   private keyLight!: THREE.DirectionalLight;
   private rimLight!: THREE.DirectionalLight;
   private bounceLight!: THREE.DirectionalLight;
@@ -125,7 +145,7 @@ export class ViewerEngine {
   private snapped = new Map<string, THREE.Vector3>();
   /** per-model top-surface height fields, built once on first use */
   private fields = new Map<string, HeightField>();
-  /** empire ids by recency; the tail is evicted once past MAX_RESIDENT */
+  /** framing ids by recency; the tail is evicted once past MAX_RESIDENT */
   private lru: string[] = [];
   /** the swap currently playing, so a new request can interrupt it */
   private activeTl: gsap.core.Timeline | null = null;
@@ -138,6 +158,11 @@ export class ViewerEngine {
   private shadowDirty = 2;
   /** models retired mid-transition; freed once the animation is over */
   private retired: LoadedModel[] = [];
+  /** Procedurally built models, kept separate from `cache`.
+   *  Loaded exhibits are expensive to fetch and parse, so they are worth
+   *  holding; generated designs are cheap to rebuild and arrive by the dozen
+   *  during a scrub, so they get their own smaller, eagerly-trimmed pool. */
+  private generated = new Map<string, LoadedModel>();
   private resizeObs: ResizeObserver | null = null;
   /** throwaway target used to warm a model's pipelines off-screen */
   private warmTarget: THREE.RenderTarget | null = null;
@@ -155,7 +180,7 @@ export class ViewerEngine {
     this.manager.onProgress = (_u, loaded, total) => {
       if (this.onLoadProgress && total > 0) this.onLoadProgress(Math.round((loaded / total) * 100));
     };
-    const draco = new DRACOLoader(this.manager).setDecoderPath("/draco/gltf/");
+    const draco = new DRACOLoader(this.manager).setDecoderPath(asset("/draco/gltf/"));
     this.loader = new GLTFLoader(this.manager);
     this.loader.setDRACOLoader(draco);
   }
@@ -368,7 +393,7 @@ export class ViewerEngine {
     }
   }
 
-  /** Warm the rig toward an empire's accent colour — Byzantine gold reads
+  /** Warm the rig toward an framing's accent colour — Byzantine gold reads
    *  differently from Inca stone, and the light should say so. */
   setTint(hex: string, dur = 1.1) {
     const tint = new THREE.Color(hex);
@@ -453,7 +478,7 @@ export class ViewerEngine {
         empire.modelPath,
         (gltf) => {
           try {
-            const model = this.normalize(gltf.scene, empire);
+            const model = this.normalize(gltf.scene, empire.id);
             // resolve the pins here, while nothing is animating: the height
             // field costs several hundred raycasts and would otherwise hitch
             // the very first frames of the swap
@@ -513,7 +538,83 @@ export class ViewerEngine {
     if (!this.cache.has(empire.id)) this.load(empire).catch(() => undefined);
   }
 
-  private normalize(sceneObj: THREE.Group, empire: Empire): LoadedModel {
+  /** Take geometry this engine did not load and put it through exactly the
+   *  same pipeline as a GLB: normalisation, footprint scaling, BVH, the rim
+   *  node material, anchor snapping and the warm pass.
+   *
+   *  This is the single entry point for procedurally built scenes. Nothing in
+   *  `normalize` is GLTF-specific, which is why the seam is this small — the
+   *  alternative, a parallel path for generated geometry, would drift from the
+   *  loaded one within a release.
+   *
+   *  `bvh` and `warm` exist because the studio rebuilds on every slider tick:
+   *  `computeBoundsTree` blocks the main thread for tens of milliseconds and
+   *  `warm` renders the group off-screen, neither of which is acceptable at
+   *  scrub rate. Drop both while dragging, then do one full pass on release so
+   *  pins and occlusion come back. */
+  async adopt(
+    root: THREE.Object3D,
+    modelKey: string,
+    opts: { bvh?: boolean; warm?: boolean; framing?: Framing } = {},
+  ): Promise<LoadedModel> {
+    const existing = this.generated.get(modelKey);
+    if (existing) return existing;
+
+    const model = this.normalize(root, modelKey, opts.bvh !== false);
+    if (opts.framing) this.snapAnchors(model, opts.framing);
+    if (opts.warm !== false) await this.warm(model);
+
+    this.generated.set(modelKey, model);
+    this.trimGenerated(modelKey);
+    return model;
+  }
+
+  /** Swap geometry in place: no turntable spin, no fly-to, camera untouched.
+   *  `transition` plays a 1.5s 720-degree handover, which is right for changing
+   *  exhibit and absurd for nudging a parapet. */
+  swapInPlace(model: LoadedModel) {
+    const old = this.current;
+    this.activeTl?.kill();
+    this.activeTl = null;
+    if (old && old !== model) this.stage.remove(old.group);
+    model.group.rotation.set(0, 0, 0);
+    model.group.position.set(0, 0, 0);
+    model.group.scale.setScalar(1);
+    this.present(model);
+    this.markShadowDirty(3);
+  }
+
+  /** Free a generated model and everything keyed to it.
+   *
+   *  `touchResidency` only evicts from `this.cache`, which `adopt` never fills,
+   *  so generated models need their own disposal. The height field and the
+   *  snapped anchors are both keyed by model key and would otherwise leak one
+   *  entry per rebuild — invisible per tick, and fatal across a ten-minute
+   *  design session. */
+  disposeGenerated(modelKey: string) {
+    const m = this.generated.get(modelKey);
+    if (!m || m === this.current) return;
+    this.generated.delete(modelKey);
+    this.fields.delete(modelKey);
+    for (const key of [...this.snapped.keys()]) {
+      if (key.startsWith(modelKey + ":")) this.snapped.delete(key);
+    }
+    this.stage.remove(m.group);
+    this.disposeModel(m);
+  }
+
+  /** Keep the current design and the two most recent variants; drop the rest.
+   *  Generated models are cheap to rebuild and a scrub session produces a lot
+   *  of them. */
+  private trimGenerated(keep: string) {
+    const keys = [...this.generated.keys()].filter((k) => k !== keep);
+    while (keys.length > 2) {
+      const drop = keys.shift();
+      if (drop) this.disposeGenerated(drop);
+    }
+  }
+
+  private normalize(sceneObj: THREE.Object3D, modelKey: string, buildBvh = true): LoadedModel {
     const group = new THREE.Group();
     const inner = sceneObj;
     group.add(inner);
@@ -548,7 +649,9 @@ export class ViewerEngine {
           // it, and fatter leaves mean far less tree to build — this runs on
           // the main thread during load, and our query load is tiny (one snap
           // pass plus four occlusion rays a few times a second)
-          (geo as any).computeBoundsTree({ indirect: true, targetLeafSize: 24 });
+          // Skipped while the studio is scrubbing: this blocks the main thread
+          // and nothing queries it until the drag ends.
+          if (buildBvh) (geo as any).computeBoundsTree({ indirect: true, targetLeafSize: 24 });
         }
         this.applyRim(m);
         meshes.push(m);
@@ -556,7 +659,7 @@ export class ViewerEngine {
     });
 
     const nsize = size.clone().multiplyScalar(s);
-    return { group, meshes, size: nsize, empireId: empire.id };
+    return { group, meshes, size: nsize, modelKey };
   }
 
   /** TSL rim-light: a soft warm fresnel edge so the architecture reads
@@ -601,23 +704,28 @@ export class ViewerEngine {
    *  instant instead of a fresh download, re-parse and re-snap. */
   present(model: LoadedModel) {
     const old = this.current;
-    if (old && old.empireId !== model.empireId) this.stage.remove(old.group);
+    // Identity, not key. Two different LoadedModels could never share an id
+    // while every model came from a GLB, so comparing keys was accidentally
+    // correct. The studio rebuilds a design under a stable key on every slider
+    // tick, and the old group would never be removed — two buildings stacked
+    // on the turntable. Comparing the objects is both correct and simpler.
+    if (old && old !== model) this.stage.remove(old.group);
     this.current = model;
     this.occlusionCache.clear();
     this.attach(model);
-    this.touchResidency(model.empireId);
+    this.touchResidency(model.modelKey);
     // carry the active layers onto the dwelling that just arrived
     this.buildWireframe();
     if (this.xrayOn) this.setXray(true);
   }
 
-  /** Mark an empire as most-recently-used and evict past the residency cap.
+  /** Mark a model as most-recently-used and evict past the residency cap.
    *  Evicted models are queued, never freed mid-animation. */
   private touchResidency(id: string) {
     this.lru = [id, ...this.lru.filter((x) => x !== id)];
     while (this.lru.length > MAX_RESIDENT) {
       const drop = this.lru.pop();
-      if (!drop || drop === this.current?.empireId) continue;
+      if (!drop || drop === this.current?.modelKey) continue;
       const p = this.cache.get(drop);
       this.cache.delete(drop);
       this.fields.delete(drop);
@@ -658,7 +766,7 @@ export class ViewerEngine {
    * the stage is empty. The dwelling casts its shadow throughout, and the
    * shadow turns with it.
    */
-  transition(next: LoadedModel, empire: Empire, opts: { instant?: boolean; onMidpoint?: () => void } = {}): Promise<void> {
+  transition(next: LoadedModel, framing: Framing, opts: { instant?: boolean; onMidpoint?: () => void } = {}): Promise<void> {
     const { onMidpoint } = opts;
     const instant = opts.instant || this.reducedMotion;
 
@@ -688,8 +796,8 @@ export class ViewerEngine {
     const handover = () => {
       this.present(next);
       onMidpoint?.();
-      this.setTint(empire.tint, 1.0);
-      this.frameEmpire(empire, !instant);
+      this.setTint(framing.tint, 1.0);
+      this.frameEmpire(framing, !instant);
     };
 
     if (instant) {
@@ -811,7 +919,7 @@ export class ViewerEngine {
    * courtyard" on a dwelling whose shape the data knows nothing about.
    */
   private heightField(model: LoadedModel, ray: THREE.Raycaster): HeightField {
-    const cached = this.fields.get(model.empireId);
+    const cached = this.fields.get(model.modelKey);
     if (cached) return cached;
     const n = 20;
     const y = new Float32Array(n * n).fill(NaN);
@@ -833,7 +941,7 @@ export class ViewerEngine {
       }
     }
     const field: HeightField = { n, y, min, max };
-    this.fields.set(model.empireId, field);
+    this.fields.set(model.modelKey, field);
     return field;
   }
 
@@ -932,15 +1040,15 @@ export class ViewerEngine {
    * the first surface below it — within a short search, so anchors that are
    * already on stone (or deliberately inside a courtyard) are left alone.
    */
-  /** Where the camera comes to rest for this empire, computed before the
+  /** Where the camera comes to rest for this framing, computed before the
    *  fly-to has run — used to prefer pins the visitor can actually see. */
-  private restingCamera(empire: Empire, model: LoadedModel) {
+  private restingCamera(framing: Framing, model: LoadedModel) {
     const h = model.size.y;
-    const dist = this.fitDistance(empire, 1.3, model);
-    const a = THREE.MathUtils.degToRad(empire.camera.azimuth);
-    const e = THREE.MathUtils.degToRad(empire.camera.elevation);
+    const dist = this.fitDistance(framing, 1.3, model);
+    const a = THREE.MathUtils.degToRad(framing.camera.azimuth);
+    const e = THREE.MathUtils.degToRad(framing.camera.elevation);
     const r = dist * Math.cos(e);
-    return new THREE.Vector3(r * Math.sin(a), empire.camera.targetY * h + 0.05 + dist * Math.sin(e), r * Math.cos(a));
+    return new THREE.Vector3(r * Math.sin(a), framing.camera.targetY * h + 0.05 + dist * Math.sin(e), r * Math.cos(a));
   }
 
   /** Is this world point in clear view from `from`, or is the building in the way? */
@@ -953,7 +1061,7 @@ export class ViewerEngine {
     return ray.intersectObjects(model.meshes, false).length === 0;
   }
 
-  private snapAnchors(model: LoadedModel, empire: Empire) {
+  private snapAnchors(model: LoadedModel, framing: Framing) {
     // Snapping happens at the handover, when the dwelling is still lowered and
     // scaled down mid-dissolve. Every ray here — height field, wall probes,
     // visibility — has to describe where things will *come to rest*, so the
@@ -967,9 +1075,9 @@ export class ViewerEngine {
 
     const ray = new THREE.Raycaster();
     ray.firstHitOnly = true;
-    const eye = this.restingCamera(empire, model);
-    empire.hotspots.forEach((hs) => {
-      const key = `${empire.id}:${hs.anchor.join(",")}`;
+    const eye = this.restingCamera(framing, model);
+    framing.hotspots.forEach((hs) => {
+      const key = `${framing.id}:${hs.anchor.join(",")}`;
       if (this.snapped.has(key)) return;
       const local = this.boxAnchor(hs.anchor, model, new THREE.Vector3(), false);
 
@@ -1001,7 +1109,7 @@ export class ViewerEngine {
 
   anchorToWorld(anchor: Vec3, out = new THREE.Vector3()): THREE.Vector3 {
     if (!this.current) return out.set(0, 0, 0);
-    const cached = this.snapped.get(`${this.current.empireId}:${anchor.join(",")}`);
+    const cached = this.snapped.get(`${this.current.modelKey}:${anchor.join(",")}`);
     if (cached) out.copy(cached);
     else this.boxAnchor(anchor, this.current, out);
     return this.current.group.localToWorld(out);
@@ -1089,7 +1197,7 @@ export class ViewerEngine {
   /** Distance at which the dwelling sits inside the frame with museum
    *  breathing room on every side, whatever the viewport aspect. Uses the
    *  footprint half-diagonal so the framing survives a full orbit. */
-  private fitDistance(empire: Empire, margin = 1.3, model = this.current) {
+  private fitDistance(framing: Framing, margin = 1.3, model = this.current) {
     if (!model) return 3.6;
     const { size } = model;
     const radius = Math.hypot(size.x, size.z) * 0.5;
@@ -1098,28 +1206,28 @@ export class ViewerEngine {
     const aspect = this.camera.aspect || 1;
     const forHeight = size.y * 0.5 / tan;
     const forWidth = radius / (tan * aspect);
-    return Math.max(forHeight, forWidth, radius) * margin * empire.camera.dist;
+    return Math.max(forHeight, forWidth, radius) * margin * framing.camera.dist;
   }
 
-  frameEmpire(empire: Empire, animate = true, onDone?: () => void) {
+  frameEmpire(framing: Framing, animate = true, onDone?: () => void) {
     if (!this.current) return;
     const h = this.current.size.y;
     this.flyTo(
-      empire.camera.azimuth,
-      empire.camera.elevation,
-      this.fitDistance(empire),
-      empire.camera.targetY * h + 0.05,
+      framing.camera.azimuth,
+      framing.camera.elevation,
+      this.fitDistance(framing),
+      framing.camera.targetY * h + 0.05,
       animate ? 1.5 : 0,
       onDone,
     );
   }
 
-  focusAnchor(anchor: Vec3, empire: Empire, dur = 1.2) {
+  focusAnchor(anchor: Vec3, framing: Framing, dur = 1.2) {
     if (!this.current) return;
     const world = this.anchorToWorld(anchor);
     const az = this.camState.az;
     gsap.to(this.camState, {
-      dist: this.fitDistance(empire, 0.62),
+      dist: this.fitDistance(framing, 0.62),
       tx: world.x * 0.72,
       ty: world.y * 0.72 + 0.06,
       tz: world.z * 0.72,
@@ -1287,6 +1395,14 @@ export class ViewerEngine {
     this.flushRetired();
     if (this.current) this.disposeModel(this.current);
     this.cache.forEach((_v, id) => this.disposeCached(id));
+    // Generated models live in their own pool, so the loaded-model teardown
+    // above never reaches them.
+    this.generated.forEach((m) => {
+      if (m !== this.current) this.disposeModel(m);
+    });
+    this.generated.clear();
+    this.fields.clear();
+    this.snapped.clear();
     this.envTex?.dispose();
     this.warmTarget?.dispose();
     this.controls?.dispose();

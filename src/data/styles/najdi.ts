@@ -2,12 +2,18 @@ import type { Empire } from "@/types/empire";
 
 export const najdi: Empire = {
   id: "najdi",
+  // Links this exhibit to the architectural character it interprets.
+  // All five original villas are contemporary interpretations, not
+  // reconstructions — the typology says so explicitly.
+  characterId: "najdi",
+  typology: "contemporary",
   name: "Najdi",
   dwelling: "Modern Najdi Villa",
   subtitle: "Carved earth geometry for the Central Plateau",
   description:
     "A contemporary courtyard villa that carries the language of Najd's mud-brick towns — triangular furjat, stepped shurfat and a projecting tarma — into deep-set glazing and thermal-mass walls built for the Riyadh sun.",
   modelPath: "/models/najdi.glb",
+  ultraHero: "/img/najdi/ultra-hero.jpg",
   tint: "#c49a6c",
   camera: { azimuth: -34, elevation: 26, dist: 1.0, targetY: 0.28 },
   facts: [
@@ -20,6 +26,7 @@ export const najdi: Empire = {
   hotspots: [
     {
       id: "shurfat",
+      elementId: "shurfat",
       title: "Shurfat Battlements",
       short: "Stepped crenellations crowning the roof",
       detail:
@@ -30,6 +37,7 @@ export const najdi: Empire = {
     },
     {
       id: "furjat",
+      elementId: "furjat",
       title: "Furjat Openings",
       short: "Triangular vents in a carved band",
       detail:
@@ -40,6 +48,7 @@ export const najdi: Empire = {
     },
     {
       id: "tarma",
+      elementId: "tarma",
       title: "Tarma",
       short: "Projecting peephole box over the door",
       detail:
@@ -50,6 +59,7 @@ export const najdi: Empire = {
     },
     {
       id: "courtyard",
+      elementId: "hosh",
       title: "Shaded Courtyard",
       short: "Pool, palms and a timber pergola",
       detail:
@@ -60,6 +70,7 @@ export const najdi: Empire = {
     },
     {
       id: "burj",
+      elementId: "burj",
       title: "Corner Burj",
       short: "Three-storey tower with its own crown",
       detail:
@@ -82,6 +93,7 @@ export const najdi: Empire = {
     cta: "View Floor Plan",
     text: "A plan section cut through the ground floor: a two-storey street wing, single-storey side wings and a rear wing wrap the square court, with the burj anchoring one corner.",
     image: "/img/najdi/floor-plan.webp",
+    plan: "/img/plan_najdi.svg",
     rooms: [
       { name: "Entrance & Tarma", note: "Under the canopy" },
       { name: "Men's Majlis", note: "Street wing, glazed bay" },

@@ -2,6 +2,9 @@
  *  The entire application is driven by these types; adding a new empire
  *  means adding data + assets, never touching the viewer or UI. */
 
+import type { Typology } from "./character";
+import type { Provenance } from "./provenance";
+
 export type Vec3 = [number, number, number];
 
 /** Hotspot anchor, expressed in *normalised model space*:
@@ -32,6 +35,14 @@ export interface Hotspot {
   labelOffset?: [number, number];
   /** how strongly the camera pushes in when activated (1 = default) */
   focus?: number;
+  /** The cultural element this pin names, when it is one from the library
+   *  (`src/data/corpus/elements.ts`). Lets the pin show the element's citations
+   *  and its placement constraints rather than just prose. */
+  elementId?: string;
+  /** Attribution for the claim made in `detail`. Optional for now because the
+   *  five existing exhibits predate the provenance layer; required for anything
+   *  authored from here on. */
+  provenance?: Provenance;
 }
 
 export interface KeyFact {
@@ -80,6 +91,14 @@ export interface EmpireSection {
   image: string;
 }
 
+export interface FloorPlanSection extends EmpireSection {
+  rooms: FloorPlanRoom[];
+  /** Measured, bilingual vector plan, shown in the floor-plan detail view.
+   *  `image` stays the card thumbnail: this one is drawn for reading at full
+   *  size and would be illegible cropped into a 16:9 tile. */
+  plan?: string;
+}
+
 export interface FloorPlanRoom {
   name: string;
   note?: string;
@@ -114,13 +133,17 @@ export interface Empire {
   subtitle: string;
   description: string;
   modelPath: string;
+  /** Photoreal exterior render, used where the villa is given a full-width
+   *  presentation. Optional: styles without one fall back to the flat
+   *  massing render in `/img/<id>/hero.webp`. */
+  ultraHero?: string;
   /** per-empire warm accent used for subtle scene tinting */
   tint: string;
   camera: CameraPreset;
   facts: KeyFact[];
   hotspots: Hotspot[];
   interior: EmpireSection;
-  floorPlan: EmpireSection & { rooms: FloorPlanRoom[] };
+  floorPlan: FloorPlanSection;
   artifacts: EmpireSection & { items: Artifact[] };
   dailyLife: EmpireSection;
   geography: EmpireSection & { regionLabel: string };
@@ -129,4 +152,14 @@ export interface Empire {
   timeline: TimelineEntry[];
   keywords: string[];
   ar?: EmpireArabicData;
+
+  /** Which architectural character this villa interprets — an `ArchCharacter.id`
+   *  from `src/data/characters`. Optional during migration; `verify:corpus`
+   *  reports any exhibit still missing it. */
+  characterId?: string;
+  /** Which of the three design typologies this villa is. All five of the
+   *  original villas are contemporary interpretations, not reconstructions. */
+  typology?: Typology;
+  /** Exhibit-level attribution. */
+  provenance?: Provenance;
 }

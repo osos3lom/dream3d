@@ -5,8 +5,6 @@
 # Production / Build
 /dist
 /dist-ssr
-/.next/
-/out/
 /build
 
 # Logs
@@ -25,9 +23,8 @@ lerna-debug.log*
 .env.test.local
 .env.production.local
 
-# Next.js build / cache
+# TypeScript build info
 *.tsbuildinfo
-next-env.d.ts
 
 # Editor / OS files
 .vscode/*

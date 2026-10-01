@@ -1,8 +1,5 @@
-"use client";
-
-import { useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import dynamic from "next/dynamic";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
+import { useNavigate } from "react-router";
 import { EMPIRES, empireById, DEFAULT_EMPIRE_ID, getLocalizedEmpire } from "@/data";
 import type { Empire } from "@/types/empire";
 import type { Language } from "@/types/i18n";
@@ -14,30 +11,40 @@ import { BottomCards } from "@/components/BottomCards";
 import { LessonModal, QuizModal, ArtifactsModal, TimelineModal, SectionModal, SearchOverlay } from "@/components/modals";
 import { CloseIcon } from "@/components/icons";
 import { useTranslation } from "@/i18n/translations";
+import { withLanguage } from "@/hooks/use-locale-chrome";
 
-const Viewer = dynamic(() => import("@/components/Viewer").then((mod) => mod.Viewer), {
-  ssr: false,
-});
+/** BrowserRouter strips the basename from its own paths, but
+ *  `window.location.pathname` still carries it. */
+const BASE_PATH = import.meta.env.BASE_URL.replace(/\/$/, "");
+import { useScrollLock } from "@/hooks/use-scroll-lock";
+
+/** three.js is by far the heaviest dependency; keeping the viewer in its own
+ *  chunk lets the parchment shell paint before it arrives. */
+const Viewer = lazy(() => import("@/components/Viewer").then((mod) => ({ default: mod.Viewer })));
 
 type ModalId = "lesson" | "quiz" | "artifacts" | "timeline" | "interior" | "floorPlan" | "dailyLife" | "geography" | null;
 
-const mq = (q: string) => (typeof window !== "undefined" ? window.matchMedia(q).matches : false);
-
-const getStorageItem = (key: string): string | null => {
-  if (typeof window === "undefined") return null;
-  try {
-    return localStorage.getItem(key);
-  } catch {
-    return null;
-  }
-};
-
-export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
-  const router = useRouter();
+export default function EmpireAtlasApp({
+  routeLang,
+  /** Which villa to open with. Set by `/:lang/villa/:exhibitId` so a specific
+   *  villa is linkable; the bare locale route leaves it undefined and gets the
+   *  default. Only the initial value is taken from the URL — selecting another
+   *  villa from the rail does not push history, which keeps the back button
+   *  meaning "the page I came from" rather than "the previous villa". */
+  initialEmpireId,
+}: {
+  routeLang: Language;
+  initialEmpireId?: string;
+}) {
+  const navigate = useNavigate();
   const [lang, setLang] = useState<Language>(routeLang);
   const t = useTranslation(lang);
-  const [rawViewerEmpire, setRawViewerEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
-  const [rawPanelEmpire, setRawPanelEmpire] = useState<Empire>(() => empireById(DEFAULT_EMPIRE_ID));
+  const [rawViewerEmpire, setRawViewerEmpire] = useState<Empire>(() =>
+    empireById(initialEmpireId ?? DEFAULT_EMPIRE_ID),
+  );
+  const [rawPanelEmpire, setRawPanelEmpire] = useState<Empire>(() =>
+    empireById(initialEmpireId ?? DEFAULT_EMPIRE_ID),
+  );
   
   const viewerEmpire = getLocalizedEmpire(rawViewerEmpire, lang);
   const panelEmpire = getLocalizedEmpire(rawPanelEmpire, lang);
@@ -51,6 +58,18 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
   const [activeNav, setActiveNav] = useState("explore");
   const [reducedMotion, setReducedMotion] = useState(false);
   const [favorites, setFavorites] = useState<Set<string>>(() => new Set());
+
+  useScrollLock(menuOpen);
+
+  /* Esc closes the drawer, matching the modals and the search overlay. */
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMenuOpen(false);
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [menuOpen]);
 
   // Sync route lang if route params change
   useEffect(() => {
@@ -87,8 +106,8 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
     try {
       localStorage.setItem("atlas-lang", next);
     } catch {}
-    router.push(`/${next}`);
-  }, [lang, router]);
+    navigate(withLanguage(window.location.pathname.replace(BASE_PATH, "") || "/", next));
+  }, [lang, navigate]);
 
   useEffect(() => {
     const q = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -151,26 +170,43 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
     (nav: string) => {
       setActiveNav(nav);
       if (nav === "lessons") setModal("lesson");
-      else if (nav === "empires" || nav === "library") setSearchOpen(true);
+      // "Library" now opens the reference layer rather than the search overlay.
+      // The corpus covers all nineteen characters, most of which have no villa,
+      // so it needs a way in that does not require knowing what to type.
+      else if (nav === "library") navigate(`/${lang}/characters`);
+      else if (nav === "empires") setSearchOpen(true);
       else if (nav === "notes") setModal("timeline");
     },
-    [],
+    [navigate, lang],
   );
 
   const onSearchPick = useCallback(
-    (empireId: string, hotspotId?: string) => {
+    (empireId: string, hotspotId?: string, characterId?: string, elementId?: string) => {
       setSearchOpen(false);
+      // Corpus results own their own pages. Checked first because `empireById`
+      // falls back to EMPIRES[0], so routing a character by empireId would
+      // quietly swap the villa instead of opening the reference page.
+      if (characterId) {
+        navigate(`/${lang}/characters/${characterId}`);
+        return;
+      }
+      if (elementId) {
+        navigate(`/${lang}/elements/${elementId}`);
+        return;
+      }
+      if (!empireId) return;
       if (empireId !== viewerEmpire.id) selectEmpire(empireId);
       if (hotspotId) window.setTimeout(() => setFocusHotspot(hotspotId), empireId !== viewerEmpire.id ? 1600 : 50);
     },
-    [selectEmpire, viewerEmpire.id],
+    [selectEmpire, viewerEmpire.id, navigate, lang],
   );
 
   const localizedEmpires = EMPIRES.map((e) => getLocalizedEmpire(e, lang));
 
   return (
     <div
-      className="flex min-h-screen flex-col bg-paper"
+      className="flex min-h-dvh flex-col bg-paper"
+      data-credits={creditsOpen ? "open" : "closed"}
       style={{ "--banner-h": creditsOpen ? "40px" : "0px" } as React.CSSProperties}
     >
       {creditsOpen && <Banner onDismiss={dismissCredits} lang={lang} />}
@@ -183,7 +219,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
         onToggleLang={toggleLang}
       />
 
-      <div className="flex min-h-[62vh] gap-4 px-3 pb-3 pt-3 sm:min-h-[520px] sm:px-4 xl:h-[calc(100vh-188px-var(--banner-h,0px))] xl:min-h-[600px] xl:px-5">
+      <div className="stage-row flex gap-4 px-3 pb-3 pt-3 sm:px-4 xl:px-5">
         <aside className="hidden w-[268px] flex-none xl:flex">
           <EmpireLibrary
             empires={localizedEmpires}
@@ -198,6 +234,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
         </aside>
 
         <main className="flex min-w-0 flex-1">
+          <Suspense fallback={<div className="atlas-card viewer-stage h-full w-full" aria-busy="true" />}>
           <Viewer
             empire={viewerEmpire}
             onSwap={onSwap}
@@ -210,6 +247,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
             onPrefetchReady={(fn) => { prefetchRef.current = fn; }}
             lang={lang}
           />
+          </Suspense>
         </main>
 
         <aside className="hidden w-[330px] flex-none xl:flex">
@@ -238,14 +276,14 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
         />
       </section>
 
-      <section className="px-3 pb-6 pt-1 sm:px-4 xl:px-5" aria-label="Explore the villa">
+      <section className="px-3 pb-[max(1.5rem,calc(var(--safe-bottom)+0.75rem))] pt-1 sm:px-4 xl:px-5" aria-label="Explore the villa">
         <BottomCards empire={panelEmpire} onOpen={(s) => setModal(s)} lang={lang} />
       </section>
 
       {menuOpen && (
         <div className="overlay-backdrop xl:hidden" onClick={() => setMenuOpen(false)}>
           <div
-            className="flex h-full w-[min(320px,86vw)] flex-col bg-paper shadow-lift"
+            className="pad-safe-top pad-safe-bottom flex h-full w-[min(320px,86vw)] flex-col bg-paper shadow-lift"
             onClick={(e) => e.stopPropagation()}
             role="dialog"
             aria-modal="true"
@@ -257,7 +295,7 @@ export default function EmpireAtlasApp({ routeLang }: { routeLang: Language }) {
               </span>
               <button
                 onClick={() => setMenuOpen(false)}
-                className="rounded-lg border border-line-warm p-1.5 text-ink-muted transition-colors hover:text-ink"
+                className="flex h-11 w-11 flex-none items-center justify-center rounded-lg border border-line-warm text-ink-muted transition-colors hover:text-ink"
                 aria-label="Close menu"
               >
                 <CloseIcon className="h-4 w-4" />

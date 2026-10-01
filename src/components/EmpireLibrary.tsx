@@ -1,5 +1,3 @@
-"use client";
-
 import { memo, useRef } from "react";
 import type { Empire } from "@/types/empire";
 import { empireImages } from "@/data";
@@ -67,7 +65,7 @@ export const EmpireLibrary = memo(function EmpireLibrary({ empires, activeId, fa
                 role="button"
                 tabIndex={-1}
                 aria-label={fav ? "Remove favorite" : "Mark favorite"}
-                className={`heart flex-none text-terracotta ${fav ? "is-fav" : ""}`}
+                className={`heart flex h-11 w-11 flex-none items-center justify-center text-terracotta ${fav ? "is-fav" : ""}`}
                 onClick={(ev) => {
                   ev.stopPropagation();
                   onToggleFav(e.id);
