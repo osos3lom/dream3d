@@ -4,12 +4,31 @@ import { salmani } from "./styles/salmani";
 import { hijazi } from "./styles/hijazi";
 import { asiri } from "./styles/asiri";
 import { eastern } from "./styles/eastern";
+import { qassimi } from "./styles/qassimi";
+import { haili } from "./styles/haili";
+import { jouf } from "./styles/jouf";
+import { northern } from "./styles/northern";
+import { tabuki } from "./styles/tabuki";
+import { madani } from "./styles/madani";
+import { ulai } from "./styles/ulai";
+import { taifi } from "./styles/taifi";
+import { bahi } from "./styles/bahi";
+import { tihami } from "./styles/tihami";
+import { jazani } from "./styles/jazani";
+import { farasani } from "./styles/farasani";
+import { najrani } from "./styles/najrani";
+import { ahsai } from "./styles/ahsai";
 
 import type { Language } from "@/types/i18n";
 
-/** The five heritage styles, each modelled as a modern villa. The data
+/** The nineteen styles of the Saudi Architecture characterization, each
+ *  modelled as a modern villa and ordered roughly north to south. The data
  *  contract is still named `Empire` from the app's first life as an atlas. */
-export const EMPIRES: Empire[] = [najdi, salmani, hijazi, asiri, eastern];
+export const EMPIRES: Empire[] = [
+  najdi, salmani, qassimi, haili, jouf, northern, tabuki,
+  madani, ulai, hijazi, taifi, bahi, asiri, tihami,
+  jazani, farasani, najrani, eastern, ahsai,
+];
 
 export const empireById = (id: string): Empire => EMPIRES.find((e) => e.id === id) ?? EMPIRES[0];
 

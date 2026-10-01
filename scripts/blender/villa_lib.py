@@ -57,10 +57,16 @@ def side_frame(fr, a):
 
 
 class G:
-    def __init__(s, mats):
+    def __init__(s, mats, site=(-17.0, -14.0, 17.0, 14.0)):
         s.mats = mats
         s.g = {}
         s.anchors = {}
+        s.site = site
+
+    def _fit(s, x, y, reach):
+        """Keep a plant's crown inside the site so nothing floats off the plinth."""
+        x0, y0, x1, y1 = s.site
+        return (min(max(x, x0 + reach), x1 - reach), min(max(y, y0 + reach), y1 - reach))
 
     # ── primitives ──────────────────────────────────────────────
     def add(s, m, V, F):
@@ -257,6 +263,7 @@ class G:
 
     # ── landscape ──────────────────────────────────────────────
     def palm(s, x, y, h, trunk="trunk", leaf="leaf", seed=0, fronds=11, L=3.0):
+        x, y = s._fit(x, y, L * 1.1 + 0.55)
         r = random.Random(seed)
         lx, ly = r.uniform(-0.5, 0.5), r.uniform(-0.5, 0.5)
         n = 6
@@ -281,6 +288,7 @@ class G:
                 s.seg(leaf, pts[i], pts[i + 1], w, 0.04)
 
     def shrub(s, x, y, r=0.7, m="leaf", seed=0):
+        x, y = s._fit(x, y, r * 1.3 + 0.35)
         rr = random.Random(seed)
         for i in range(3):
             s.cyl(m, x + rr.uniform(-0.3, 0.3), y + rr.uniform(-0.3, 0.3), 0.25, 0.25 + r * rr.uniform(0.8, 1.3),
@@ -289,6 +297,114 @@ class G:
     def pool(s, x0, y0, x1, y1, z, coping="coping", water="water", w=0.35):
         s.box(water, x0, y0, z, x1, y1, z + 0.04)
         s.parapet(coping, x0 - w, y0 - w, x1 + w, y1 + w, z, 0.12, w)
+
+    # ── arches, drums & texture ────────────────────────────────
+    def _curve(s, a0, a1, zs, rise, pointed, steps=9):
+        """Intrados points of an arch springing at zs across a0..a1."""
+        mid = (a0 + a1) / 2
+        out = []
+        for i in range(steps):
+            t = i / (steps - 1)
+            if pointed:
+                k = 0.85
+                z = zs + rise * math.sin(t * math.pi / 2 * k) / math.sin(math.pi / 2 * k)
+                out.append((a0 + (mid - a0) * t, z))
+            else:
+                th = t * math.pi / 2
+                out.append((a0 + (mid - a0) * math.sin(th), zs + rise * (1 - math.cos(th))))
+        return out, mid
+
+    def arch_pts(s, a0, a1, zs, rise, pointed=False):
+        """Full intrados polyline a0 to a1, for soffits and shadow fills."""
+        L, _ = s._curve(a0, a1, zs, rise, pointed)
+        return L + [(a1 - (p[0] - a0), p[1]) for p in L][::-1][1:]
+
+    def arch_top(s, m, fr, a0, a1, zs, rise, d0, d1, pointed=False):
+        """Fill the corners above a rectangular opening so it reads as an arch."""
+        L, mid = s._curve(a0, a1, zs, rise, pointed)
+        zt = zs + rise
+        s.poly(m, [(a0, zs)] + L + [(mid, zt), (a0, zt)], fr, d0, d1)
+        R = [(a1 - (p[0] - a0), p[1]) for p in L]
+        s.poly(m, [(a1, zt), (mid, zt)] + R[::-1] + [(a1, zs)], fr, d0, d1)
+
+    def arcade(s, m, fr, u0, u1, z0, zs, rise, ztop, t, bay=2.2, pier=0.5, pointed=True):
+        """Row of arched bays: piers plus the solid wall above each arch."""
+        n = max(1, int((u1 - u0) / bay))
+        w = (u1 - u0) / n
+        for i in range(n):
+            a0, a1 = u0 + i * w + pier / 2, u0 + (i + 1) * w - pier / 2
+            s.lbox(m, fr, u0 + i * w - pier / 2 if i else u0, a0, z0, ztop, -t, 0)
+            s.arch_top(m, fr, a0, a1, zs, rise, -t, 0, pointed)
+            s.lbox(m, fr, a0, a1, zs + rise, ztop, -t, 0)
+        s.lbox(m, fr, u1 - pier / 2, u1, z0, ztop, -t, 0)
+
+    def drum(s, m, cx, cy, z0, z1, r, t, seg=24, gaps=()):
+        """Circular wall ring; `gaps` are (start, end) bearings in degrees."""
+        for i in range(seg):
+            a, b = 2 * math.pi * i / seg, 2 * math.pi * (i + 1) / seg
+            deg = math.degrees((a + b) / 2) % 360
+            if any(g0 <= deg <= g1 for g0, g1 in gaps):
+                continue
+            V = []
+            for rr in (r - t, r):
+                for ang in (a, b):
+                    V += [(cx + rr * math.cos(ang), cy + rr * math.sin(ang), z0),
+                          (cx + rr * math.cos(ang), cy + rr * math.sin(ang), z1)]
+            s.add(m, V, [(0, 1, 3, 2), (4, 6, 7, 5), (0, 2, 6, 4), (1, 5, 7, 3), (0, 4, 5, 1), (2, 3, 7, 6)])
+
+    def thatch(s, m, cx, cy, z0, h, r, seg=20, rings=4, ring_m=None, eave=0.35):
+        """Conical palm-frond roof with binding rings — the Tihama/Jazan hut."""
+        s.cyl(m, cx, cy, z0 - 0.12, z0, r + eave, r + eave * 0.8, seg=seg)
+        s.cyl(m, cx, cy, z0, z0 + h, r + eave * 0.8, 0.02, seg=seg)
+        for i in range(rings):
+            f = (i + 1) / (rings + 1)
+            rr = (r + eave * 0.8) * (1 - f) + 0.06
+            s.cyl(ring_m or m, cx, cy, z0 + h * f, z0 + h * f + 0.09, rr + 0.04, rr + 0.02, seg=seg)
+
+    def stone_skin(s, m, fr, u0, u1, z0, z1, seed=0, d=0.07, density=2.2, lo=0.25, hi=0.5):
+        """Scatter proud blocks over a wall face — coral, granite or rubble."""
+        rr = random.Random(seed)
+        for _ in range(int((u1 - u0) * density)):
+            a = rr.uniform(u0, max(u0, u1 - hi))
+            b = rr.uniform(z0 + 0.05, max(z0 + 0.06, z1 - 0.3))
+            s.lbox(m, fr, a, a + rr.uniform(lo, hi), b, b + rr.uniform(0.15, 0.25), 0.0, d)
+
+    def beam_row(s, m, fr, u0, u1, z, step=0.6, dep=0.4, w=0.14):
+        """Projecting round beam ends (danchal / athil) under a roof line."""
+        a = u0
+        O, U, N = fr
+        while a <= u1:
+            p = (O[0] + U[0] * a, O[1] + U[1] * a, z)
+            s.seg(m, p, (p[0] + N[0] * dep, p[1] + N[1] * dep, z), w, w)
+            a += step
+
+    def quoins(s, m, x0, y0, x1, y1, z0, z1, w=0.5, step=0.7):
+        """Alternating corner stones."""
+        z = z0
+        k = 0
+        while z < z1 - step:
+            if k % 2 == 0:
+                for cx, cy in ((x0, y0), (x1 - w, y0), (x0, y1 - w), (x1 - w, y1 - w)):
+                    s.box(m, cx - 0.05, cy - 0.05, z, cx + w + 0.05, cy + w + 0.05, z + step * 0.9)
+            z += step
+            k += 1
+
+    def conifer(s, x, y, h, trunk="trunk", leaf="leaf", tiers=3, r=1.5):
+        x, y = s._fit(x, y, r + 0.2)
+        s.cyl(trunk, x, y, 0.2, h * 0.35, 0.18, 0.12, seg=7)
+        for k in range(tiers):
+            z0 = h * (0.25 + 0.22 * k)
+            s.cyl(leaf, x, y, z0, z0 + h * 0.4, r * (1 - 0.25 * k), 0.05, seg=9)
+
+    def canopy(s, x, y, h, trunk="trunk", leaf="leaf", r=1.8, seed=0):
+        """Round-headed tree — olive, sidr, acacia."""
+        x, y = s._fit(x, y, r + 0.6)
+        rr = random.Random(seed)
+        s.cyl(trunk, x, y, 0, h * 0.55, 0.22, 0.16, seg=7)
+        for i in range(4):
+            s.cyl(leaf, x + rr.uniform(-0.5, 0.5), y + rr.uniform(-0.5, 0.5),
+                  h * 0.45 + i * 0.22, h * 0.45 + i * 0.22 + r * 0.75,
+                  r * rr.uniform(0.6, 1.0), r * 0.3, seg=9)
 
     def anchor(s, name, x, y, z, snap):
         s.anchors[name] = (x, y, z, snap)

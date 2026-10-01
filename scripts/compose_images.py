@@ -9,7 +9,9 @@ import sys
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFilter
 
-STYLES = ["najdi", "salmani", "hijazi", "asiri", "eastern"]
+STYLES = ["najdi", "salmani", "hijazi", "asiri", "eastern",
+          "qassimi", "haili", "jouf", "northern", "tabuki", "madani", "taifi",
+          "bahi", "ulai", "ahsai", "najrani", "tihami", "jazani", "farasani"]
 # render name -> (published name, transparent?)
 SHOTS = {
     "hero": ("hero", True),

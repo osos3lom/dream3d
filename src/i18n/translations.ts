@@ -19,7 +19,7 @@ export const UI_TRANSLATIONS = {
     },
     banner: {
       tag: "3D Studio",
-      text: "Explore five Saudi heritage styles reimagined as modern 3D villas, with signature-motif hotspots, courtyard views, plans and guided lessons.",
+      text: "Explore nineteen Saudi heritage styles reimagined as modern 3D villas, with signature-motif hotspots, courtyard views, plans and guided lessons.",
       dismiss: "Got it",
     },
     infoPanel: {
@@ -179,7 +179,7 @@ export const UI_TRANSLATIONS = {
     },
     banner: {
       tag: "استوديو ثلاثي الأبعاد",
-      text: "استكشف خمسة طرز تراثية سعودية بصياغة فلل حديثة ثلاثية الأبعاد، مع نقاط للعناصر المميزة ومناظر الأفنية والمخططات والدروس.",
+      text: "استكشف تسعة عشر طرازاً تراثياً سعودياً بصياغة فلل حديثة ثلاثية الأبعاد، مع نقاط للعناصر المميزة ومناظر الأفنية والمخططات والدروس.",
       dismiss: "فهمت",
     },
     infoPanel: {

@@ -27,6 +27,35 @@ THREE.Mesh.prototype.raycast = acceleratedRaycast;
 (THREE.BufferGeometry.prototype as any).computeBoundsTree = computeBoundsTree;
 (THREE.BufferGeometry.prototype as any).disposeBoundsTree = disposeBoundsTree;
 
+/**
+ * Which engine the GPU context on a given canvas belongs to.
+ *
+ * `getContext` hands back the *same* context for the same canvas, so two
+ * engines mounted on one canvas — which is what React's StrictMode does, and
+ * what a slow backend start-up lets happen — are sharing one context rather
+ * than holding one each. Only the engine that claimed the canvas last may tear
+ * that context down; an engine that has been superseded leaves it alone, or it
+ * would pull the context out from under the viewer that is on screen.
+ */
+const canvasOwner = new WeakMap<HTMLCanvasElement, ViewerEngine>();
+
+/**
+ * Hand the GPU context back.
+ *
+ * `Renderer.dispose()` only tears the backend down once `renderer.init()` has
+ * resolved; before that it returns early and the WebGL context survives on a
+ * canvas nobody can reach any more. A browser keeps only a handful of live
+ * contexts and drops the oldest to make room, which surfaces as a device-loss
+ * error on the viewer that is actually on screen — so every renderer we build
+ * is explicitly told to let its context go, initialised or not.
+ */
+function releaseContext(renderer?: THREE.WebGPURenderer | null) {
+  const gl = (renderer as unknown as { backend?: { gl?: WebGL2RenderingContext } } | undefined)
+    ?.backend?.gl;
+  if (!gl || gl.isContextLost()) return;
+  gl.getExtension("WEBGL_lose_context")?.loseContext();
+}
+
 /** dwellings kept parsed in memory at once (~2MB of source geometry each) */
 const MAX_RESIDENT = 6;
 const TARGET_SIZE = 2.0; // normalized model footprint, world units
@@ -132,6 +161,10 @@ export class ViewerEngine {
   }
 
   async init() {
+    if (this.disposed) return;
+    // claimed before the backend starts, so a later engine on the same canvas
+    // always wins the context even if its predecessor finishes initialising
+    canvasOwner.set(this.canvas, this);
     const renderer = new THREE.WebGPURenderer({
       canvas: this.canvas,
       antialias: true,
@@ -146,6 +179,14 @@ export class ViewerEngine {
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     await renderer.init();
+    // the viewer can be torn down while the backend is still coming up — a
+    // language switch remounts the whole tree. Nothing below has run, so there
+    // is nothing to unwind except the renderer itself, and its GL context.
+    if (this.disposed) {
+      this.renderer = renderer;
+      this.teardownRenderer();
+      return;
+    }
     this.renderer = renderer;
 
     const scene = new THREE.Scene();
@@ -1249,6 +1290,26 @@ export class ViewerEngine {
     this.envTex?.dispose();
     this.warmTarget?.dispose();
     this.controls?.dispose();
-    this.renderer?.dispose();
+    this.teardownRenderer();
+  }
+
+  /**
+   * Drop the renderer and the GL context behind it — but only if this engine
+   * is still the canvas's owner. A superseded engine (StrictMode's first
+   * mount, or one whose backend came up after the viewer had already moved on)
+   * shares its context with the engine now on screen, and disposing the
+   * renderer would lose that context for both.
+   */
+  private teardownRenderer() {
+    const renderer = this.renderer;
+    if (!renderer) return;
+    // this renderer is on its way out, so a context loss is expected rather
+    // than an error — and a superseded engine keeps a live listener on the
+    // shared canvas, which would otherwise report the handover as a fault
+    renderer.onDeviceLost = async () => {};
+    if (canvasOwner.get(this.canvas) !== this) return;
+    canvasOwner.delete(this.canvas);
+    renderer.dispose();
+    releaseContext(renderer);
   }
 }

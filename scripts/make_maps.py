@@ -21,6 +21,9 @@ CITIES = {
     "Riyadh": (46.72, 24.71), "Jeddah": (39.17, 21.54), "Makkah": (39.83, 21.42), "Madinah": (39.61, 24.47),
     "Abha": (42.50, 18.22), "Qatif": (50.01, 26.56), "Dammam": (50.10, 26.43), "Al-Ahsa": (49.59, 25.38),
     "Ha'il": (41.69, 27.52), "Tabuk": (36.57, 28.38), "Najran": (44.13, 17.49), "Buraydah": (43.97, 26.33),
+    "Unaizah": (43.99, 26.08), "Sakaka": (40.21, 29.97), "Arar": (41.02, 30.98), "Rafha": (43.50, 29.62),
+    "Al-Ula": (37.92, 26.61), "Taif": (40.42, 21.27), "Al-Baha": (41.47, 20.01), "Jazan": (42.55, 16.89),
+    "Farasan": (42.12, 16.70), "Hofuf": (49.59, 25.38),
 }
 STYLES = {
     "najdi": {"centre": (45.2, 25.4), "r": (3.4, 2.6), "cities": ["Riyadh", "Buraydah", "Ha'il"], "label": "NAJD"},
@@ -28,9 +31,25 @@ STYLES = {
     "hijazi": {"centre": (39.4, 22.6), "r": (1.6, 3.0), "cities": ["Jeddah", "Makkah", "Madinah"], "label": "HIJAZ"},
     "asiri": {"centre": (42.6, 18.4), "r": (1.5, 1.3), "cities": ["Abha", "Najran"], "label": "ASIR"},
     "eastern": {"centre": (49.8, 25.9), "r": (1.2, 1.9), "cities": ["Qatif", "Dammam", "Al-Ahsa"], "label": "EASTERN PROVINCE"},
+    "qassimi": {"centre": (43.8, 26.2), "r": (1.7, 1.4), "cities": ["Buraydah", "Unaizah"], "label": "QASSIM"},
+    "haili": {"centre": (41.6, 27.5), "r": (2.1, 1.7), "cities": ["Ha'il"], "label": "HA'IL"},
+    "jouf": {"centre": (40.0, 29.9), "r": (1.9, 1.4), "cities": ["Sakaka"], "label": "AL-JOUF"},
+    "northern": {"centre": (42.2, 30.5), "r": (2.8, 1.2), "cities": ["Arar", "Rafha"], "label": "NORTHERN BORDERS"},
+    "tabuki": {"centre": (36.9, 28.3), "r": (1.9, 1.7), "cities": ["Tabuk"], "label": "TABUK"},
+    "ulai": {"centre": (37.92, 26.61), "r": (1.0, 0.9), "cities": ["Al-Ula"], "label": "AL-ULA"},
+    "madani": {"centre": (39.61, 24.47), "r": (1.4, 1.3), "cities": ["Madinah"], "label": "MADINAH"},
+    "taifi": {"centre": (40.42, 21.27), "r": (1.0, 0.9), "cities": ["Taif", "Makkah"], "label": "TAIF"},
+    "bahi": {"centre": (41.47, 20.01), "r": (1.0, 0.9), "cities": ["Al-Baha"], "label": "AL-BAHA"},
+    "tihami": {"centre": (41.9, 18.6), "r": (0.9, 1.7), "cities": ["Jazan", "Abha"], "label": "TIHAMA"},
+    "jazani": {"centre": (42.6, 17.0), "r": (1.0, 0.8), "cities": ["Jazan"], "label": "JAZAN"},
+    "farasani": {"centre": (42.12, 16.70), "r": (0.55, 0.45), "cities": ["Farasan", "Jazan"], "label": "FARASAN"},
+    "najrani": {"centre": (44.13, 17.49), "r": (1.4, 1.1), "cities": ["Najran"], "label": "NAJRAN"},
+    "ahsai": {"centre": (49.59, 25.38), "r": (1.2, 1.0), "cities": ["Hofuf", "Al-Ahsa"], "label": "AL-AHSA"},
 }
 
-NUDGE = {"Makkah": (10, 16), "Jeddah": (-10, -12), "Dammam": (10, 14), "Qatif": (10, -12)}
+NUDGE = {"Makkah": (10, 16), "Jeddah": (-10, -12), "Dammam": (10, 14), "Qatif": (10, -12),
+         "Unaizah": (10, 14), "Hofuf": (-10, 14), "Farasan": (-10, 10), "Rafha": (10, 14),
+         "Al-Ula": (-10, -2), "Al-Baha": (-10, 12)}
 LON0, LON1, LAT0, LAT1 = 33.0, 57.5, 15.2, 33.2
 
 

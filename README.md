@@ -1,8 +1,9 @@
 # Heritage Villa Studio
 
-**Saudi heritage styles as modern villas.** An interactive 3D studio of five Saudi architectural
-traditions, each built as a contemporary villa. Turn each villa on its plinth, read the signature
-motifs pinned to its walls and roofline, and follow it through its courtyard, plan, street and region.
+**Saudi heritage styles as modern villas.** An interactive 3D studio of the nineteen regional
+architectural styles of the Saudi Architecture characterization, each built as a contemporary villa.
+Turn each villa on its plinth, read the signature motifs pinned to its walls and roofline, and follow
+it through its courtyard, plan, street and region.
 
 ![Heritage Villa Studio](./public/og-cover.jpg)
 
@@ -23,9 +24,9 @@ motifs pinned to its walls and roofline, and follow it through its courtyard, pl
 
 ## What it is
 
-Five modern villas, one per heritage style, each modelled in 3D with the motifs that identify the style.
-The viewer is the centre of the app: a turntable stage where a villa can be orbited, zoomed, sectioned
-and read.
+Nineteen modern villas, one per heritage style, each modelled in 3D with the motifs that identify the
+style. The viewer is the centre of the app: a turntable stage where a villa can be orbited, zoomed,
+sectioned and read.
 
 |                           |                                                                                                        |
 | ------------------------- | ------------------------------------------------------------------------------------------------------ |
@@ -42,16 +43,32 @@ The whole app is bilingual (English / Arabic, with RTL layout).
 
 ## The styles
 
-| Style           | Region           | Signature motifs                                              | How the villa reads                                                             |
-| --------------- | ---------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| Najdi           | Najd             | Furjat, shurfat, tarma                                        | Courtyard villa in earthen render, dark-backed triangle band, corner burj        |
-| Salmani         | Najd (Riyadh)    | Deep shadow lines, modular facade, triangle crown             | Stone volume cantilevered over glass, deep slot windows, entry portal, pool court |
-| Hijazi          | Hijaz            | Roshan / mashrabiya lattice, coral coursing, high vents       | Three-storey coral-stone block with stacked rawashin and a latticed roof terrace |
-| Asiri           | Asir             | Al-Qatt Al-Asiri painting, slate courses, qamariyat           | Tapering stone towers on a terrace, ribbed walls, painted friezes, glazed wing   |
-| Eastern Coastal | Eastern Province | Coral & gypsum, carved screens, danchal, riwaq, badgir        | Gypsum courtyard house on a coral base, pointed arcade, two-tone Qatif court      |
+Ordered as the library lists them, roughly north to south and inland to coast.
 
-Adding a sixth style means adding a data file in [`src/data/styles/`](src/data/styles), a model and its
-images. The viewer and the UI are data-driven. [`src/types/empire.ts`](src/types/empire.ts) is the
+| Style            | Region             | Signature motifs                                              | How the villa reads                                                              |
+| ---------------- | ------------------ | ------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Najdi            | Najd               | Furjat, shurfat, tarma                                        | Courtyard villa in earthen render, dark-backed triangle band, corner burj         |
+| Salmani          | Najd (Riyadh)      | Deep shadow lines, modular facade, triangle crown             | Stone volume cantilevered over glass, deep slot windows, entry portal, pool court |
+| Qassimi          | Al-Qassim          | Mud-brick coursing, carved doors, palm-trunk lintels          | Low earth-toned courtyard mass with a shaded loggia onto the date garden          |
+| Ha'ili           | Ha'il              | Painted door panels, stepped merlons, narrow slit windows     | Compact fort-like block, battlemented parapet, colour at the openings             |
+| Jouf             | Al-Jouf            | Dry-laid stone, olive-wood screens, sunken court              | Banded stone villa around a planted sunken court                                  |
+| Northern Borders | Northern Borders   | Tent-line profiles, stone plinths, windbreak walls            | Long low stone base under a taut tented canopy                                    |
+| Tabuki           | Tabuk              | Rock-cut arches, light sandstone, deep reveals                | Sandstone mass carved with arched recesses                                        |
+| Madani           | Madinah            | Black basalt banded in white, timber screens, pointed arch    | Basalt bands, white plaster lifts, a white merlon crown over a stair tower        |
+| Ulai             | Al-Ula             | Terraced mud-brick, framed viewing slots, oasis terraces      | Stepped terraces climbing the site, framed openings onto the palm oasis           |
+| Hijazi           | Hijaz              | Roshan / mashrabiya lattice, coral coursing, high vents       | Three-storey coral-stone block with stacked rawashin and a latticed roof terrace  |
+| Taifi            | Taif               | Rose-granite masonry, timber balconies, pergolas              | Granite villa with deep timber balconies over a rose terrace                      |
+| Bahi             | Al-Baha            | Slate string courses, stone towers, juniper timber            | Stone tower villa with projecting slate drip courses                              |
+| Asiri            | Asir               | Al-Qatt Al-Asiri painting, slate courses, qamariyat           | Tapering stone towers on a terrace, ribbed walls, painted friezes, glazed wing    |
+| Tihami           | Tihama             | Conical thatch forms, reed screens, painted interiors         | Masonry base beside thatched round pavilions                                      |
+| Jazani           | Jazan              | Oshah roundhouse, mud rings, tall thatch cone                 | Modern block anchored by a full-height oshah drum                                 |
+| Farasani         | Farasan Islands    | Carved gypsum rosettes, coral blocks, shaded arcades          | Coral-block villa with gypsum rosette panels and a sea-facing arcade              |
+| Najrani          | Najran             | Mud tower house, projecting rain drips, rammed-earth courses  | Tall rammed-earth tower with shaded courses over a low wing                       |
+| Eastern Coastal  | Eastern Province   | Coral & gypsum, carved screens, danchal, riwaq, badgir        | Gypsum courtyard house on a coral base, pointed arcade, two-tone Qatif court      |
+| Ahsai            | Al-Ahsa            | Palm-trunk danchal, gypsum relief, shaded oasis courts        | Oasis courtyard villa with exposed danchal beams under palm shade                 |
+
+Adding a twentieth style means adding a data file in [`src/data/styles/`](src/data/styles), a model and
+its images. The viewer and the UI are data-driven. [`src/types/empire.ts`](src/types/empire.ts) is the
 contract (it keeps its name from the app's first life as an empire atlas).
 
 ---
@@ -63,27 +80,30 @@ contract (it keeps its name from the app's first life as an empire atlas).
 Each villa is generated by a Python script run in Blender 5.2 through the 3D Jutsu Blender MCP:
 
 - [`scripts/blender/villa_lib.py`](scripts/blender/villa_lib.py) is a small kit: walls with real
-  openings, glazing, furjat bands, shurfat, rawashin, lattice, ribs, palms, pools, a plan-section cutter
-  and the render helpers.
-- One script per style ([`najdi.py`](scripts/blender/najdi.py), [`salmani.py`](scripts/blender/salmani.py),
-  [`hijazi.py`](scripts/blender/hijazi.py), [`asiri.py`](scripts/blender/asiri.py),
-  [`eastern.py`](scripts/blender/eastern.py)) builds the villa, declares its hotspot anchors in metres,
-  and lists its camera shots.
+  openings, glazing, furjat bands, shurfat, rawashin, lattice, ribs, arcades, thatch drums, stone
+  skins, palms, pools, a plan-section cutter and the render helpers.
+- One script per style in [`scripts/blender/`](scripts/blender) — nineteen of them, from
+  [`najdi.py`](scripts/blender/najdi.py) to [`ahsai.py`](scripts/blender/ahsai.py) — builds the villa,
+  declares its hotspot anchors in metres, and lists its camera shots.
+
+Every villa is built on the same 34 × 28 m site, and the kit clamps planting to that footprint so the
+models frame identically on the stage.
 
 Geometry is merged into one mesh per material, so every mesh in the exported GLB carries a single
-flat PBR material (`public/models/*.glb`, 0.6–1.5 MB each, no textures). The build prints the hotspot
+flat PBR material (`public/models/*.glb`, 0.3–1.5 MB each, no textures). The build prints the hotspot
 anchors already converted to the viewer's normalised box space. The Blender exports include a sun
 rig and a camera; the viewer drops both on load.
 
 ### The imagery — rendered from the same models
 
-Every image in `public/img/<style>/` comes from the model it describes, rendered in Eevee:
+Every image in `public/img/<style>/` comes from the model it describes, rendered in Eevee — 133 images
+in all, six per villa plus a region map:
 
 | Card            | Shot                                                                      |
 | --------------- | ------------------------------------------------------------------------- |
 | Hero, thumbnail | Three-quarter aerial views                                                |
 | Courtyard view  | Eye-level in the court, terrace or garden                                 |
-| Floor plan      | The model sliced at 2.4 m (3.2 m for Asiri), caps filled dark, top ortho  |
+| Floor plan      | The model sliced at roughly 2.4 m, caps filled dark, top ortho            |
 | Signature motifs| A close-up of the facade's motifs                                         |
 | Living here     | Eye-level street approach                                                 |
 
@@ -99,13 +119,11 @@ Requires Node 20 or newer.
 
 ```bash
 npm install
-npm run dev        # dev server on :3000
-npm run build      # typecheck (tsc -b) then production build to dist/
-npm run preview    # serve the production build
+npm run dev        # Next dev server on :3000
+npm run build      # production build
+npm run start      # serve the production build
 npm run lint
 ```
-
-`npm run build` runs `tsc -b` first, so a type error fails the build rather than shipping.
 
 ---
 
@@ -113,11 +131,15 @@ npm run lint
 
 ```
 src/
-├─ App.tsx                 app shell: layout, routing of modals, responsive behaviour
+├─ app/
+│  ├─ layout.tsx           document shell and metadata
+│  ├─ page.tsx             redirects / to /en
+│  └─ [lang]/page.tsx      the localized route (en | ar)
 ├─ three/
 │  └─ engine.ts            the entire 3D viewer — renderer, lighting, camera, transitions,
 │                          hotspot resolution, model residency
 ├─ components/
+│  ├─ EmpireAtlasApp.tsx   app shell: layout, routing of modals, responsive behaviour
 │  ├─ Viewer.tsx           canvas host, tool rail, layer menu, request sequencing
 │  ├─ HotspotLayer.tsx     screen-space pins and their hover annotations
 │  ├─ EmpireLibrary.tsx    the style rail (desktop) and drawer contents (mobile)
@@ -127,7 +149,9 @@ src/
 │  ├─ modals.tsx           lesson, quiz, artefacts, timeline, sections, ⌘K search
 │  └─ ui/                  shadcn/ui primitives
 ├─ data/
+│  ├─ index.ts             the ordered list of styles
 │  └─ styles/*.ts          one file per style: copy, facts, hotspots, lesson, quiz, timeline (EN + AR)
+├─ i18n/translations.ts    the UI string table (EN + AR)
 └─ types/empire.ts         the data contract every style satisfies
 scripts/
 ├─ blender/                procedural villa kit + one build script per style
@@ -135,11 +159,12 @@ scripts/
 └─ make_maps.py            schematic region maps
 ```
 
-**Stack** — React 19 · TypeScript 5.9 · Vite 7 · Tailwind CSS 3.4 · three.js 0.185 (WebGPU renderer
-with TSL node materials) · GSAP 3 · three-mesh-bvh · shadcn/ui
+**Stack** — Next.js 15 (App Router) · React 19 · TypeScript 5.9 · Tailwind CSS 3.4 · three.js 0.185
+(WebGPU renderer with TSL node materials) · GSAP 3 · three-mesh-bvh · shadcn/ui
 
 **Design language** — a warm parchment palette on Cormorant Garamond and Inter, defined once as CSS
-custom properties in [`src/index.css`](src/index.css) and bridged into Tailwind and shadcn tokens.
+custom properties in [`src/app/globals.css`](src/app/globals.css) and bridged into Tailwind and
+shadcn tokens.
 
 **Responsive behaviour** — the three-column desktop stage engages at 1280px. Below that the style
 library moves into a drawer behind a hamburger, the villa detail reads inline beneath the model,
@@ -193,6 +218,6 @@ when it changes.
 
 ## Before you deploy
 
-`og:image` and `og:url` in [`index.html`](index.html) are supposed to be absolute URLs. Most crawlers
-resolve a relative path against the page, but not all do. Once the site has a domain, swap
-`/og-cover.jpg` for the full URL and add an `og:url`. There is a comment marking the spot.
+[`src/app/layout.tsx`](src/app/layout.tsx) resolves its `og:image` and `og:url` against
+`metadataBase`, which falls back to `http://localhost:3000`. Set `NEXT_PUBLIC_APP_URL` to the site's
+real origin before deploying, or crawlers will be handed localhost URLs.
